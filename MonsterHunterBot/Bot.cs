@@ -17,7 +17,7 @@ namespace MonsterHunterBot
         public async Task RunAsync()
         {
             string json = string.Empty;
-
+            
             using (var fs = File.OpenRead("config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding()))
                 json = await sr.ReadToEndAsync().ConfigureAwait(false);
