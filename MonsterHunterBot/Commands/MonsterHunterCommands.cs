@@ -6,6 +6,7 @@ using DSharpPlus.Net.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -89,11 +90,11 @@ namespace MonsterHunterBot.Commands
         }
 
         [Command("Hurt"), Description("Deals damage to the user. TESTING PURPOSES")]
-        public async Task Hurt(CommandContext ctx)
+        public async Task Hurt(CommandContext ctx, int damage)
         {
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
-            hunter.TakeDamage(10);
+            hunter.TakeDamage(damage);
             await UpdateDamageDisplay(hunter, ctx);
         }
 
@@ -111,20 +112,31 @@ namespace MonsterHunterBot.Commands
             var hurtRole = ctx.Guild.GetRole(698235085857620070);
             var damagedRole = ctx.Guild.GetRole(698235116354273333);
             var nearDeathRole = ctx.Guild.GetRole(698235220373143602);
-
-            await ctx.Member.RevokeRoleAsync(fullHealthRole);
-            await ctx.Member.RevokeRoleAsync(hurtRole);
-            await ctx.Member.RevokeRoleAsync(damagedRole);
-            await ctx.Member.RevokeRoleAsync(nearDeathRole);
+            var deadRole = ctx.Guild.GetRole(698273743239118919);
+            int newRoleIndex;
 
             if (hunter.Health == hunter.MaxHealth)
-                await ctx.Member.GrantRoleAsync(fullHealthRole);
+            { await ctx.Member.GrantRoleAsync(fullHealthRole); newRoleIndex = 1; }
             else if (hunter.Health > hunter.MaxHealth / 2)
-                await ctx.Member.GrantRoleAsync(hurtRole);
+            { await ctx.Member.GrantRoleAsync(hurtRole); newRoleIndex = 2; }
             else if (hunter.Health > hunter.MaxHealth / 10)
-                await ctx.Member.GrantRoleAsync(damagedRole);
+            { await ctx.Member.GrantRoleAsync(damagedRole); newRoleIndex = 3; }
+            else if (hunter.Health > 0)
+            { await ctx.Member.GrantRoleAsync(nearDeathRole); newRoleIndex = 4; }
             else
-                await ctx.Member.GrantRoleAsync(nearDeathRole);
+            { await ctx.Member.GrantRoleAsync(deadRole); newRoleIndex = 5; }
+
+            if (newRoleIndex != 1)
+                await ctx.Member.RevokeRoleAsync(fullHealthRole);
+            if (newRoleIndex != 2)
+                await ctx.Member.RevokeRoleAsync(hurtRole);
+            if (newRoleIndex != 3)
+                await ctx.Member.RevokeRoleAsync(damagedRole);
+            if (newRoleIndex != 4)
+                await ctx.Member.RevokeRoleAsync(nearDeathRole);
+            if (newRoleIndex != 5)
+                await ctx.Member.RevokeRoleAsync(deadRole);
+
         }
 
         public bool NoHunter(CommandContext ctx)
