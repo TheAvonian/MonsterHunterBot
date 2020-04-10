@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Net.Models;
 using Newtonsoft.Json;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,11 +57,11 @@ namespace MonsterHunterBot.Commands
             }
 
             // Adds new hunter to the hunters list
-            Bot.HunterList.Add(new ConfigHunterJson() { HunterName = hName, Uuid = ctx.Member.GetHashCode().ToString() });
+            Bot.HunterList.Add(new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.GetHashCode().ToString() });
 
             CreateJson();
 
-            await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!");
+            await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
         }
 
         public void CreateJson()
@@ -82,6 +84,32 @@ namespace MonsterHunterBot.Commands
                 CreateJson();
                 await ctx.Channel.SendMessageAsync("Deletion successful.");
             }
+        }
+
+        [Command("Health"), Description("Retuns how much health the hunter has")]
+        public async Task Health(CommandContext ctx)
+        {
+            string uuid = ctx.Member.GetHashCode().ToString();
+            Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
+            await ctx.Channel.SendMessageAsync(hunter.Name + " has " + hunter.Health + "/" + hunter.MaxHealth + " currently");
+        }
+
+
+        [Command("Hurt"), Description("Deals damage to the user. TESTING PURPOSES")]
+        public async Task Hurt(CommandContext ctx)
+        {
+            string uuid = ctx.Member.GetHashCode().ToString();
+            Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
+            hunter.TakeDamage(10);
+
+            
+        }
+
+        public Task updateDamageDisplay(Hunter hunter, CommandContext ctx)
+        {
+            var fullHealthRole = ctx.Guild.GetRole();
+
+            ctx.Member.ReplaceRolesAsync()
         }
     }
 }

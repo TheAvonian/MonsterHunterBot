@@ -17,7 +17,7 @@ namespace MonsterHunterBot
     {
         [JsonProperty("Uuid")]
         public string Uuid { get; set; }
-        [JsonProperty("HunterName")]
-        public string HunterName { get; set; }
+        [JsonProperty("Hunter")]
+        public Hunter Hunter { get; set; }
     }
 }

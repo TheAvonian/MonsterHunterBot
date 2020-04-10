@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MonsterHunterBot
 {
-    class Hunter
+    public class Hunter
     {
         public string Name { get; set; }
         public List<string> Weapons { get; private set; }

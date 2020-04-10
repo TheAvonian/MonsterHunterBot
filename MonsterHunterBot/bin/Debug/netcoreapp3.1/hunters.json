@@ -1,6 +1,23 @@
 [
   {
     "Uuid": "1412176151",
-    "HunterName": "Aven"
+    "Hunter": null
+  },
+  {
+    "Uuid": "926977972",
+    "Hunter": {
+      "Armor": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "Name": "Atlas",
+      "Weapons": [],
+      "ResourcePouch": [],
+      "Health": 100,
+      "MaxHealth": 100
+    }
   }
 ]
