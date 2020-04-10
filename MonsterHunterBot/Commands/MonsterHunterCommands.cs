@@ -57,9 +57,10 @@ namespace MonsterHunterBot.Commands
             }
 
             // Adds new hunter to the hunters list
-            Bot.HunterList.Add(new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.GetHashCode().ToString() });
+            var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.GetHashCode().ToString() };
+            Bot.HunterList.Add(configHunter);
 
-            CreateJson();
+            UpdateJson(configHunter);
 
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
         }
@@ -67,14 +68,14 @@ namespace MonsterHunterBot.Commands
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
         public async Task DeleteMyHunter(CommandContext ctx)
         {
-            if (HasHunter(ctx)) return;
+            if (NoHunter(ctx)) return;
             string uuid = ctx.Member.GetHashCode().ToString();
             await ctx.Channel.SendMessageAsync("Are you sure you wish to delete your hunter? (yes/no)");
             var userInput = (await GetUserMessage(ctx)).ToString();
             if (userInput == "yes")
             {
+                DeleteJson(Bot.HunterList.Find(u => u.Uuid == uuid));
                 Bot.HunterList.RemoveAll(u => u.Uuid == uuid);
-                CreateJson();
                 await ctx.Channel.SendMessageAsync("Deletion successful.");
             }
         }
@@ -82,7 +83,7 @@ namespace MonsterHunterBot.Commands
         [Command("Health"), Description("Retuns how much health the hunter has")]
         public async Task Health(CommandContext ctx)
         {
-            if (!HasHunter(ctx)) return;
+            if (NoHunter(ctx)) return;
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             await ctx.Channel.SendMessageAsync(hunter.Name + " has " + hunter.Health + "/" + hunter.MaxHealth + " currently");
@@ -138,10 +139,10 @@ namespace MonsterHunterBot.Commands
 
         }
 
-        public bool HasHunter(CommandContext ctx)
+        public bool NoHunter(CommandContext ctx)
         {
             string uuid = ctx.Member.GetHashCode().ToString();
-            if (Bot.HunterList.Any(u => u.Uuid == uuid))
+            if (!Bot.HunterList.Any(u => u.Uuid == uuid))
             {
                 ctx.Channel.SendMessageAsync("Okay real idiot here with no hunter trying to use a hunter command...");
                 return true;
@@ -149,12 +150,14 @@ namespace MonsterHunterBot.Commands
             return false;
         }
 
-        public void CreateJson()
+        public void UpdateJson(ConfigHunterJson chj)
         {
-            // Creates and writes to a new json file called hunters.json with all current hunters
-            string json = JsonConvert.SerializeObject(Bot.HunterList, Formatting.Indented);
+            File.WriteAllText(".\\Hunters\\" + chj.Uuid + ".json", JsonConvert.SerializeObject(chj, Formatting.Indented));
+        }
 
-            File.WriteAllText("hunters.json", json);
+        public void DeleteJson(ConfigHunterJson chj)
+        {
+            File.Delete(".\\Hunters\\" + chj.Uuid + ".json");
         }
 
         public async Task<string> GetUserMessage(CommandContext ctx)
