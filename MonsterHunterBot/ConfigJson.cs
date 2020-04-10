@@ -12,4 +12,12 @@ namespace MonsterHunterBot
         [JsonProperty("Prefix")]
         public string Prefix { get; private set; }
     }
+
+    public struct ConfigHunterJson
+    {
+        [JsonProperty("Uuid")]
+        public string Uuid { get; set; }
+        [JsonProperty("HunterName")]
+        public string HunterName { get; set; }
+    }
 }

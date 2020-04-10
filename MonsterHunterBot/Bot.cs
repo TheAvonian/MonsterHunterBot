@@ -1,6 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
 using MonsterHunterBot.Commands;
 using Newtonsoft.Json;
 using System;
@@ -15,6 +16,8 @@ namespace MonsterHunterBot
     {
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
+        public InteractivityExtension Interactivity { get; private set; }
+        public static List<ConfigHunterJson> HunterList { get; set; }
         public async Task RunAsync()
         {
             string json = string.Empty;
@@ -25,6 +28,11 @@ namespace MonsterHunterBot
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
+            using (var fs = File.OpenRead("hunters.json"))
+            using (var sr = new StreamReader(fs, new UTF8Encoding()))
+                json = await sr.ReadToEndAsync().ConfigureAwait(false);
+            HunterList = JsonConvert.DeserializeObject<List<ConfigHunterJson>>(json);
+            
             var config = new DiscordConfiguration
             {
                 Token = configJson.Token,
@@ -37,6 +45,11 @@ namespace MonsterHunterBot
             Client = new DiscordClient(config);
 
             Client.Ready += OnClientReady;
+
+            Client.UseInteractivity(new InteractivityConfiguration
+            {
+                Timeout = TimeSpan.FromMinutes(2)
+            });
 
             var commandsConfig = new CommandsNextConfiguration
             {
