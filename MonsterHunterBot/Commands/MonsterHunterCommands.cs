@@ -65,6 +65,7 @@ namespace MonsterHunterBot.Commands
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
         public async Task DeleteMyHunter(CommandContext ctx)
         {
+            if (HasHunter(ctx)) return;
             string uuid = ctx.Member.GetHashCode().ToString();
             await ctx.Channel.SendMessageAsync("Are you sure you wish to delete your hunter? (yes/no)");
             var userInput = (await GetUserMessage(ctx)).ToString();
@@ -79,14 +80,14 @@ namespace MonsterHunterBot.Commands
         [Command("Health"), Description("Retuns how much health the hunter has")]
         public async Task Health(CommandContext ctx)
         {
-            if (HasHunter(ctx)) return;
+            if (!HasHunter(ctx)) return;
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             await ctx.Channel.SendMessageAsync(hunter.Name + " has " + hunter.Health + "/" + hunter.MaxHealth + " currently");
         }
 
         [Command("Hurt"), Description("Deals damage to the user. TESTING PURPOSES")]
-        public async Task Hurt(CommandContext ctx)
+        public void Hurt(CommandContext ctx)
         {
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
