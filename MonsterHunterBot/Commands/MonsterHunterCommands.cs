@@ -45,9 +45,7 @@ namespace MonsterHunterBot.Commands
 
             await ctx.Channel.SendMessageAsync("What will your name be? (Max 30 characters)");
 
-            var response = await interactivity.WaitForMessageAsync(u => u.Channel == ctx.Channel && (u.Author == ctx.User || u.Author == ctx.Member));
-
-            var hName = response.Result.Content;
+            var hName = GetUserMessage(ctx).ToString();
 
             // If response is over 29 characters get it out of here and restart
             if(hName.Length > 29)
@@ -72,13 +70,19 @@ namespace MonsterHunterBot.Commands
             File.WriteAllText("hunters.json", json);
         }
 
+        public async Task<string> GetUserMessage(CommandContext ctx)
+        {
+            var interactivity = ctx.Client.GetInteractivity();
+            return (await interactivity.WaitForMessageAsync(u => u.Channel == ctx.Channel && (u.Author == ctx.User || u.Author == ctx.Member))).Result.Content;
+        }
+
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
         public async Task DeleteMyHunter(CommandContext ctx)
         {
             string uuid = ctx.Member.GetHashCode().ToString();
             await ctx.Channel.SendMessageAsync("Are you sure you wish to delete your hunter? (yes/no)");
-            var interactivity = ctx.Client.GetInteractivity();
-            if ((await interactivity.WaitForMessageAsync(u => u.Channel == ctx.Channel && (u.Author == ctx.User || u.Author == ctx.Member))).Result.Content == "yes")
+            var userInput = GetUserMessage(ctx).ToString();
+            if (userInput == "yes")
             {
                 Bot.HunterList.RemoveAll(u => u.Uuid == uuid);
                 CreateJson();
@@ -93,7 +97,6 @@ namespace MonsterHunterBot.Commands
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             await ctx.Channel.SendMessageAsync(hunter.Name + " has " + hunter.Health + "/" + hunter.MaxHealth + " currently");
         }
-
 
         [Command("Hurt"), Description("Deals damage to the user. TESTING PURPOSES")]
         public async Task Hurt(CommandContext ctx)
