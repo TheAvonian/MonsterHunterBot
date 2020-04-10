@@ -12,11 +12,13 @@ namespace MonsterHunterBot
         public int CritChance { get; private set; }
         public int Rank { get; private set; }
         public List<string> MoveList { get; private set; } //TODO make a "Moves" class and change this to a list of moves
+        public int MaxHealth;
 
-        public Monster(string name, int health, int rank, int critChance)
+        public Monster(string name, int MaxHealth, int rank, int critChance)
         {
             this.Name = name;
-            this.Health = health;
+            this.Health = MaxHealth;
+            this.MaxHealth = MaxHealth;
             this.Rank = rank;
             this.CritChance = critChance;
         }
