@@ -45,7 +45,7 @@ namespace MonsterHunterBot.Commands
 
             await ctx.Channel.SendMessageAsync("What will your name be? (Max 30 characters)");
 
-            var hName = GetUserMessage(ctx).ToString();
+            var hName = (await GetUserMessage(ctx)).ToString();
 
             // If response is over 29 characters get it out of here and restart
             if(hName.Length > 29)
@@ -81,7 +81,7 @@ namespace MonsterHunterBot.Commands
         {
             string uuid = ctx.Member.GetHashCode().ToString();
             await ctx.Channel.SendMessageAsync("Are you sure you wish to delete your hunter? (yes/no)");
-            var userInput = GetUserMessage(ctx).ToString();
+            var userInput = (await GetUserMessage(ctx)).ToString();
             if (userInput == "yes")
             {
                 Bot.HunterList.RemoveAll(u => u.Uuid == uuid);
