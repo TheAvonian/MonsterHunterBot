@@ -49,6 +49,7 @@ namespace MonsterHunterBot
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<BasicCommands>();
+            Commands.RegisterCommands<MonsterHunterCommands>();
 
             await Client.ConnectAsync();
 
