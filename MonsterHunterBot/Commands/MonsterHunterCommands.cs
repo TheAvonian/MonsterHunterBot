@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace MonsterHunterBot.Commands
 {
@@ -92,6 +93,15 @@ namespace MonsterHunterBot.Commands
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             hunter.TakeDamage(10);
+            UpdateDamageDisplay(hunter, ctx);
+        }
+
+        [Command("DamageDisplay")]
+        public void DamageDisplay(CommandContext ctx)
+        {
+            string uuid = ctx.Member.GetHashCode().ToString();
+            Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
+            UpdateDamageDisplay(hunter, ctx);
         }
 
         public void UpdateDamageDisplay(Hunter hunter, CommandContext ctx)
