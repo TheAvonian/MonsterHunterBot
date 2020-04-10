@@ -25,7 +25,9 @@ namespace MonsterHunterBot
         public void TakeDamage(int damage)
         {
             Health -= damage;
-            //placeholder for updateDamageDisplay()
+
+            if (Health < 0)
+                Health = 0;
         }
 
         //heals the player with the value entered
