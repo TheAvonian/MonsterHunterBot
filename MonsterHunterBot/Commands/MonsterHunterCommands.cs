@@ -101,15 +101,28 @@ namespace MonsterHunterBot.Commands
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             hunter.TakeDamage(10);
-
-            
         }
 
-        public Task updateDamageDisplay(Hunter hunter, CommandContext ctx)
+        public void UpdateDamageDisplay(Hunter hunter, CommandContext ctx)
         {
-            var fullHealthRole = ctx.Guild.GetRole();
+            var fullHealthRole = ctx.Guild.GetRole(698235037069606995);
+            var hurtRole = ctx.Guild.GetRole(698235085857620070);
+            var damagedRole = ctx.Guild.GetRole(698235116354273333);
+            var nearDeathRole = ctx.Guild.GetRole(698235220373143602);
 
-            ctx.Member.ReplaceRolesAsync()
+            ctx.Member.RevokeRoleAsync(fullHealthRole);
+            ctx.Member.RevokeRoleAsync(hurtRole);
+            ctx.Member.RevokeRoleAsync(damagedRole);
+            ctx.Member.RevokeRoleAsync(nearDeathRole);
+
+            if (hunter.Health == hunter.MaxHealth)
+                ctx.Member.GrantRoleAsync(fullHealthRole);
+            else if (hunter.Health > hunter.MaxHealth / 2)
+                ctx.Member.GrantRoleAsync(hurtRole);
+            else if (hunter.Health > hunter.MaxHealth / 10)
+                ctx.Member.GrantRoleAsync(damagedRole);
+            else
+                ctx.Member.GrantRoleAsync(nearDeathRole);
         }
     }
 }

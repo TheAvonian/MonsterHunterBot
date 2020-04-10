@@ -11,7 +11,7 @@ namespace MonsterHunterBot
         public List<string> ResourcePouch { get; private set; }
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
-        public Array Armor = new Array[5]; //Make armor class && make empty slot and initialize with that instead of null
+        //Make armor class && make empty slot and initialize with that instead of null
 
         public Hunter(string name)
         {
@@ -40,7 +40,7 @@ namespace MonsterHunterBot
         }
 
         //Swaps out old armor for new 
-        public void EquipArmor(int slotIndex, string newArmor)
+        /*public void EquipArmor(int slotIndex, string newArmor)
         {
             //sets the old armors "equipped" boolean to false
             Armor.GetValue(slotIndex);
@@ -48,6 +48,6 @@ namespace MonsterHunterBot
             Armor.SetValue(newArmor, slotIndex);
 
             //TODO: update "equipped" field to true
-        }
+        }*/
     }
 }
