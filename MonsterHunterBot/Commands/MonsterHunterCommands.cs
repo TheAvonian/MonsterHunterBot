@@ -111,6 +111,7 @@ namespace MonsterHunterBot.Commands
             var hurtRole = ctx.Guild.GetRole(698235085857620070);
             var damagedRole = ctx.Guild.GetRole(698235116354273333);
             var nearDeathRole = ctx.Guild.GetRole(698235220373143602);
+            var deadRole = ctx.Guild.GetRole(698273743239118919);
             int newRoleIndex;
 
             if (hunter.Health == hunter.MaxHealth)
@@ -119,8 +120,10 @@ namespace MonsterHunterBot.Commands
             { await ctx.Member.GrantRoleAsync(hurtRole); newRoleIndex = 2; }
             else if (hunter.Health > hunter.MaxHealth / 10)
             { await ctx.Member.GrantRoleAsync(damagedRole); newRoleIndex = 3; }
-            else
+            else if (hunter.Health > 0)
             { await ctx.Member.GrantRoleAsync(nearDeathRole); newRoleIndex = 4; }
+            else
+            { await ctx.Member.GrantRoleAsync(deadRole); newRoleIndex = 5; }
 
             if (newRoleIndex != 1)
                 await ctx.Member.RevokeRoleAsync(fullHealthRole);
@@ -130,6 +133,8 @@ namespace MonsterHunterBot.Commands
                 await ctx.Member.RevokeRoleAsync(damagedRole);
             if (newRoleIndex != 4)
                 await ctx.Member.RevokeRoleAsync(nearDeathRole);
+            if (newRoleIndex != 5)
+                await ctx.Member.RevokeRoleAsync(deadRole);
 
         }
 
