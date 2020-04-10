@@ -62,20 +62,6 @@ namespace MonsterHunterBot.Commands
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
         }
 
-        public void CreateJson()
-        {
-            // Creates and writes to a new json file called hunters.json with all current hunters
-            string json = JsonConvert.SerializeObject(Bot.HunterList, Formatting.Indented);
-
-            File.WriteAllText("hunters.json", json);
-        }
-
-        public async Task<string> GetUserMessage(CommandContext ctx)
-        {
-            var interactivity = ctx.Client.GetInteractivity();
-            return (await interactivity.WaitForMessageAsync(u => u.Channel == ctx.Channel && (u.Author == ctx.User || u.Author == ctx.Member))).Result.Content;
-        }
-
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
         public async Task DeleteMyHunter(CommandContext ctx)
         {
@@ -93,6 +79,7 @@ namespace MonsterHunterBot.Commands
         [Command("Health"), Description("Retuns how much health the hunter has")]
         public async Task Health(CommandContext ctx)
         {
+            if (HasHunter(ctx)) return;
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             await ctx.Channel.SendMessageAsync(hunter.Name + " has " + hunter.Health + "/" + hunter.MaxHealth + " currently");
@@ -127,5 +114,31 @@ namespace MonsterHunterBot.Commands
             else
                 ctx.Member.GrantRoleAsync(nearDeathRole);
         }
+
+        public bool HasHunter(CommandContext ctx)
+        {
+            string uuid = ctx.Member.GetHashCode().ToString();
+            if (Bot.HunterList.Any(u => u.Uuid == uuid))
+            {
+                ctx.Channel.SendMessageAsync("Okay real idiot here with no hunter trying to use a hunter command...");
+                return true;
+            }
+            return false;
+        }
+
+        public void CreateJson()
+        {
+            // Creates and writes to a new json file called hunters.json with all current hunters
+            string json = JsonConvert.SerializeObject(Bot.HunterList, Formatting.Indented);
+
+            File.WriteAllText("hunters.json", json);
+        }
+
+        public async Task<string> GetUserMessage(CommandContext ctx)
+        {
+            var interactivity = ctx.Client.GetInteractivity();
+            return (await interactivity.WaitForMessageAsync(u => u.Channel == ctx.Channel && (u.Author == ctx.User || u.Author == ctx.Member))).Result.Content;
+        }
+
     }
 }
