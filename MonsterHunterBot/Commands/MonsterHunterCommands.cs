@@ -92,6 +92,7 @@ namespace MonsterHunterBot.Commands
         [Command("Hurt"), Description("Deals damage to the user. TESTING PURPOSES")]
         public async Task Hurt(CommandContext ctx, int damage)
         {
+            if (NoHunter(ctx)) return;
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             hunter.TakeDamage(damage);
