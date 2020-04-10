@@ -1,6 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
+using MonsterHunterBot.Commands;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -41,10 +42,13 @@ namespace MonsterHunterBot
             {
                 StringPrefixes = new string[] { configJson.Prefix },
                 EnableDms = false,
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true,
+                
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
+
+            Commands.RegisterCommands<BasicCommands>();
 
             await Client.ConnectAsync();
 
