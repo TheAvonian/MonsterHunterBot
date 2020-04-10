@@ -19,5 +19,11 @@ namespace MonsterHunterBot.Commands
                 a.Topic = "100/100";
             }).ConfigureAwait(false);
         }
+
+        [Command("CreateHunter")]
+        public async Task CreateHunter(CommandContext ctx)
+        {
+            
+        }
     }
 }
