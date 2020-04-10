@@ -17,7 +17,7 @@ namespace MonsterHunterBot
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
-        public static List<ConfigHunterJson> HunterList { get; set; }
+        public static List<ConfigHunterJson> HunterList { get; set; } = new List<ConfigHunterJson>();
         public async Task RunAsync()
         {
             string json = string.Empty;
@@ -28,10 +28,14 @@ namespace MonsterHunterBot
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-            using (var fs = File.OpenRead("hunters.json"))
-            using (var sr = new StreamReader(fs, new UTF8Encoding()))
-                json = await sr.ReadToEndAsync().ConfigureAwait(false);
-            HunterList = JsonConvert.DeserializeObject<List<ConfigHunterJson>>(json);
+            var jsonFiles = Directory.EnumerateFiles(".\\Hunters", "*.json");
+            foreach(string j in jsonFiles)
+            {
+                using (var fs = File.OpenRead(j))
+                using (var sr = new StreamReader(fs, new UTF8Encoding()))
+                    json = await sr.ReadToEndAsync().ConfigureAwait(false);
+                HunterList.Add(JsonConvert.DeserializeObject<ConfigHunterJson>(json));
+            }
             
             var config = new DiscordConfiguration
             {

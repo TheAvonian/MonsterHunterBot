@@ -12,7 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="bin\Debug\netcoreapp3.1\hunters.json" />
+    <None Include="bin\Debug\netcoreapp3.1\Hunters\1412176151.json" />
+    <None Include="bin\Debug\netcoreapp3.1\Hunters\926977972.json" />
   </ItemGroup>
 
   <ItemGroup>
