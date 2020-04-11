@@ -53,6 +53,7 @@ namespace MonsterHunterBot.Commands
             UpdateJson(configHunter);
 
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
+            await UpdateDamageDisplay(configHunter.Hunter, ctx);
         }
 
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
