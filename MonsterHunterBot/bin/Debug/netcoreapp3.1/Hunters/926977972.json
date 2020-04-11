@@ -5,6 +5,43 @@
     "Weapons": [],
     "ResourcePouch": [],
     "Health": 100,
-    "MaxHealth": 100
+    "MaxHealth": 100,
+    "ArmorSlots": [
+      {
+        "Name": "Empty Slot",
+        "Defense": 0,
+        "Description": "It's just nothing...",
+        "Icon": null,
+        "Equipped": true
+      },
+      {
+        "Name": "Empty Slot",
+        "Defense": 0,
+        "Description": "It's just nothing...",
+        "Icon": null,
+        "Equipped": true
+      },
+      {
+        "Name": "Empty Slot",
+        "Defense": 0,
+        "Description": "It's just nothing...",
+        "Icon": null,
+        "Equipped": true
+      },
+      {
+        "Name": "Empty Slot",
+        "Defense": 0,
+        "Description": "It's just nothing...",
+        "Icon": null,
+        "Equipped": true
+      },
+      {
+        "Name": "Empty Slot",
+        "Defense": 0,
+        "Description": "It's just nothing...",
+        "Icon": null,
+        "Equipped": true
+      }
+    ]
   }
 }
