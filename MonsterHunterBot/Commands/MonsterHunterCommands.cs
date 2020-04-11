@@ -171,7 +171,7 @@ namespace MonsterHunterBot.Commands
             while (true)
             {
                 var reaction = await Interactivity.WaitForReactionAsync(
-                    x => x.Message == ArmorDisplay && x.Message.Author.Id == ctx.Member.Id && 
+                    x => x.Message == ArmorDisplay && x.User.Id == ctx.Member.Id && 
                     (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji || x.Emoji == GreavesEmoji), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 if (reaction.Result is null)
                 {
