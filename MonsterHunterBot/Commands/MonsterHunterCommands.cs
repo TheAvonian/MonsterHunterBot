@@ -20,7 +20,20 @@ using System.Web;
 namespace MonsterHunterBot.Commands
 {
     public class MonsterHunterCommands : BaseCommandModule
-    { 
+    {
+
+        [Command("InitializeMonsterHunter")]
+        public async Task InitializeMonsterHunter(CommandContext ctx)
+        {
+            var interactivity = ctx.Client.GetInteractivity();
+            var message = await ctx.Channel.SendMessageAsync("Are you sure you want to dedicate this channel to Monster Hunter?");
+            await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, "thumbsdown"));
+            await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, "thumbsup"));
+            var reaction = await interactivity.WaitForReactionAsync(x => x.Message == message && x.Message.Author.Id == ctx.Member.Id && (x.Emoji == DiscordEmoji.FromName(ctx.Client, "thumbsdown") || x.Emoji == DiscordEmoji.FromName(ctx.Client, "thumbsup")));
+            
+
+        }
+
         [Command("CreateHunter"), Description("Creates the starting hunter")]
         public async Task CreateHunter(CommandContext ctx)
         {
@@ -52,7 +65,7 @@ namespace MonsterHunterBot.Commands
             var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.GetHashCode().ToString() };
             Bot.HunterList.Add(configHunter);
 
-            UpdateJson(configHunter);
+            UpdateJson(ctx, configHunter);
 
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
             //await UpdateDamageDisplay(configHunter.Hunter, ctx);
@@ -90,7 +103,7 @@ namespace MonsterHunterBot.Commands
             Bot.HunterList.Find(u => u.Uuid == uuid).Hunter.TakeDamage(damage);
             
             await UpdateDamageDisplay(Bot.HunterList.Find(u => u.Uuid == uuid).Hunter, ctx);
-            UpdateJson(Bot.HunterList.Find(u => u.Uuid == uuid));
+            UpdateJson(ctx, Bot.HunterList.Find(u => u.Uuid == uuid));
         }
 
         [Command("DamageDisplay")]
@@ -147,8 +160,7 @@ namespace MonsterHunterBot.Commands
                 await ArmorDisplay.CreateReactionAsync(WaistEmoji);
                 await ArmorDisplay.CreateReactionAsync(GreavesEmoji);
                 await Task.Delay(100);
-                var reaction = await Interactivity.WaitForReactionAsync(
-                    x => x.Message == ArmorDisplay && ctx.Message.Author.Id == ctx.Member.Id && (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji || x.Emoji == GreavesEmoji), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                var reaction = await Interactivity.WaitForReactionAsync(x => x.Message == ArmorDisplay && ctx.Message.Author.Id == ctx.Member.Id && (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji || x.Emoji == GreavesEmoji), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 if (reaction.Result is null)
                 {
                     await ctx.Channel.SendMessageAsync("it is null bye bye");
@@ -181,7 +193,7 @@ namespace MonsterHunterBot.Commands
                     equipment = hunter.ArmorSlots[4];
                     ArmorEmbed.Title = hunter.Name + "'s Greaves Slot";
                 }
-                else if (ArmorEmbed.Title == hunter.Name + SOMETHING SLOT GOES HERE) continue;
+                else { continue; }
 
                 ArmorEmbed.Description = equipment.Name;
                 ArmorEmbed.AddField("Defense", equipment.Defense.ToString());
@@ -190,7 +202,7 @@ namespace MonsterHunterBot.Commands
                 await ArmorDisplay.DeleteAsync();
             }
             await ctx.Channel.SendMessageAsync("it is null bye bye 2");
-
+            
         }
 
         public async Task UpdateChannel(CommandContext ctx, Monster Monster)
@@ -246,14 +258,14 @@ namespace MonsterHunterBot.Commands
             return false;
         }
 
-        public void UpdateJson(ConfigHunterJson chj)
+        public void UpdateJson(CommandContext ctx, ConfigHunterJson chj)
         {
-            File.WriteAllText(".\\Hunters\\" + chj.Uuid + ".json", JsonConvert.SerializeObject(chj, Formatting.Indented));
+            File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + chj.Uuid + ".json", JsonConvert.SerializeObject(chj, Formatting.Indented));
         }
 
-        public void DeleteJson(ConfigHunterJson chj)
+        public void DeleteJson(CommandContext ctx, ConfigHunterJson chj)
         {
-            File.Delete(".\\Hunters\\" + chj.Uuid + ".json");
+            File.Delete(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + chj.Uuid + ".json");
         }
 
         public async Task<string> GetUserMessage(CommandContext ctx)
