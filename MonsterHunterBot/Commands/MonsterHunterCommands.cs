@@ -25,7 +25,6 @@ namespace MonsterHunterBot.Commands
         [Command("BeginMH")]
         public async Task BeginMH(CommandContext ctx)
         {
-            var interactivity = ctx.Client.GetInteractivity();
             await ctx.Channel.SendMessageAsync("Are you sure you want to dedicate this channel to Monster Hunter? (yes/no)");
 
             var user = (await GetUserMessage(ctx)).ToString();
