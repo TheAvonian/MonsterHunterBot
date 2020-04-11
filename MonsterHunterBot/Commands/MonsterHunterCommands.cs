@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -113,6 +114,22 @@ namespace MonsterHunterBot.Commands
             };
 
             await ctx.Channel.SendMessageAsync(embed:MonsterEmbed);
+        }
+
+        [Command("DisplayArmor")]
+        public async Task DisplayArmor(CommandContext ctx)
+        {
+            string uuid = ctx.Member.GetHashCode().ToString();
+            Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
+
+            var ArmorEmbed = new DiscordEmbedBuilder
+            {
+                Title = hunter.Name + "'s Armor Loadout",
+                Color = DiscordColor.Blue,
+            };
+            ArmorEmbed.AddField("Head:", hunter.ArmorSlots[0].Name + " Defense: " + hunter.ArmorSlots[0].Defense + ". " + hunter.ArmorSlots[0].Description);
+
+            await ctx.Channel.SendMessageAsync(embed:ArmorEmbed);
         }
 
         public async Task UpdateChannel(CommandContext ctx, Monster Monster)
