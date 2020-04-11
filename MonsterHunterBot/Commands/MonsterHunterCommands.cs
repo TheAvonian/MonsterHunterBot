@@ -18,17 +18,7 @@ using System.Web;
 namespace MonsterHunterBot.Commands
 {
     public class MonsterHunterCommands : BaseCommandModule
-    {
-        [Command("UpdateChannel")]
-        public async Task UpdateChannel(CommandContext ctx)
-        {
-            await ctx.Channel.ModifyAsync(a =>
-            {
-                a.Name = "Griffen";
-                a.Topic = new Random().Next(100).ToString() + "/100";
-            });
-        }
-
+    { 
         [Command("CreateHunter"), Description("Creates the starting hunter")]
         public async Task CreateHunter(CommandContext ctx)
         {
@@ -63,6 +53,7 @@ namespace MonsterHunterBot.Commands
             UpdateJson(configHunter);
 
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
+            await UpdateDamageDisplay(configHunter.Hunter, ctx);
         }
 
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
@@ -106,6 +97,31 @@ namespace MonsterHunterBot.Commands
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             await UpdateDamageDisplay(hunter, ctx);
+        }
+
+        [Command("SpawnMonster")]
+        public async Task SpawnMonster(CommandContext ctx)
+        { 
+            Monster Jagras = new Monster("Jagras", 25, 1, 2);
+            await UpdateChannel(ctx, Jagras);
+
+            var MonsterEmbed = new DiscordEmbedBuilder
+            {
+                Title = "A Jagras has arrived!",
+                ThumbnailUrl = "https://vignette.wikia.nocookie.net/monsterhunter/images/3/39/MHW-Jagras_Icon.png/revision/latest/scale-to-width-down/170?cb=20180128024205",
+                Color = DiscordColor.Red
+            };
+
+            await ctx.Channel.SendMessageAsync(embed:MonsterEmbed);
+        }
+
+        public async Task UpdateChannel(CommandContext ctx, Monster Monster)
+        {
+            await ctx.Channel.ModifyAsync(a =>
+            {
+                a.Name = Monster.Name;
+                a.Topic = Monster.Health + "/" + Monster.MaxHealth;
+            });
         }
 
         public async Task UpdateDamageDisplay(Hunter hunter, CommandContext ctx)

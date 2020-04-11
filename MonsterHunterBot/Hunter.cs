@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,7 +13,7 @@ namespace MonsterHunterBot
         public List<string> ResourcePouch { get; private set; }
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
-        //Make armor class && make empty slot and initialize with that instead of null
+        public Armor[] ArmorSlots { get; private set; } = { new Armor(), new Armor(), new Armor(), new Armor(), new Armor() };
 
         public Hunter(string name)
         {
@@ -43,14 +45,14 @@ namespace MonsterHunterBot
         }
 
         //Swaps out old armor for new 
-        /*public void EquipArmor(int slotIndex, string newArmor)
+        public void EquipArmor(int slotIndex, Armor newArmor)
         {
             //sets the old armors "equipped" boolean to false
-            Armor.GetValue(slotIndex);
+            ArmorSlots[slotIndex].UnequipArmor();
 
-            Armor.SetValue(newArmor, slotIndex);
+            ArmorSlots[slotIndex] = newArmor;
 
-            //TODO: update "equipped" field to true
-        }*/
+            ArmorSlots[slotIndex].EquipArmor();
+        }
     }
 }
