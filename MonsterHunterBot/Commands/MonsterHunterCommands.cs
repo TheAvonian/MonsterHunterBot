@@ -125,6 +125,10 @@ namespace MonsterHunterBot.Commands
             var Interactivity = ctx.Client.GetInteractivity();
 
             var HelmetEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370227997507594);
+            var ChestplateEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370277641289738);
+            var WaistEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370363079524382);
+            var GreavesEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370396021587978);
+            var BracersEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370329512378531);
               
             var ArmorEmbed = new DiscordEmbedBuilder
             {
@@ -138,18 +142,46 @@ namespace MonsterHunterBot.Commands
             {
                 var ArmorDisplay = await ctx.Channel.SendMessageAsync(embed: ArmorEmbed);
                 await ArmorDisplay.CreateReactionAsync(HelmetEmoji);
+                await ArmorDisplay.CreateReactionAsync(ChestplateEmoji);
+                await ArmorDisplay.CreateReactionAsync(BracersEmoji);
+                await ArmorDisplay.CreateReactionAsync(WaistEmoji);
+                await ArmorDisplay.CreateReactionAsync(GreavesEmoji);
 
-                var reaction = await Interactivity.WaitForReactionAsync(x => x.Channel == ctx.Channel).ConfigureAwait(false);
+                var reaction = await Interactivity.WaitForReactionAsync(
+                    x => x.Message == ArmorDisplay &&
+                    x.Message.Author.Id == ctx.Member.Id &&
+                    x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji || x.Emoji == GreavesEmoji).ConfigureAwait(false);
 
-                Armor equipment;
+                Armor equipment = null;
                 if (ArmorEmbed.Title != hunter.Name + "'s Helmet Slot" && reaction.Result.Emoji == HelmetEmoji)
                 {
                     equipment = hunter.ArmorSlots[0];
                     ArmorEmbed.Title = hunter.Name + "'s Helmet Slot";
-                    ArmorEmbed.Description = equipment.Name;
-                    ArmorEmbed.AddField("Defense", equipment.Defense.ToString());
-                    ArmorEmbed.AddField("Description", equipment.Description);
                 }
+                else if (ArmorEmbed.Title != hunter.Name + "'s Chest Slot" && reaction.Result.Emoji == ChestplateEmoji)
+                {
+                    equipment = hunter.ArmorSlots[1];
+                    ArmorEmbed.Title = hunter.Name + "'s Chest Slot";
+                }
+                else if (ArmorEmbed.Title != hunter.Name + "'s Bracers Slot" && reaction.Result.Emoji == WaistEmoji)
+                {
+                    equipment = hunter.ArmorSlots[2];
+                    ArmorEmbed.Title = hunter.Name + "'s Bracers Slot";
+                }
+                else if (ArmorEmbed.Title != hunter.Name + "'s Waist Slot" && reaction.Result.Emoji == WaistEmoji)
+                {
+                    equipment = hunter.ArmorSlots[3];
+                    ArmorEmbed.Title = hunter.Name + "'s Waist Slot";
+                }
+                else if (ArmorEmbed.Title != hunter.Name + "'s Greaves Slot" && reaction.Result.Emoji == WaistEmoji)
+                {
+                    equipment = hunter.ArmorSlots[4];
+                    ArmorEmbed.Title = hunter.Name + "'s Greaves Slot";
+                }
+
+                ArmorEmbed.Description = equipment.Name;
+                ArmorEmbed.AddField("Defense", equipment.Defense.ToString());
+                ArmorEmbed.AddField("Description", equipment.Description);
 
                 await ArmorDisplay.DeleteAsync();
             }
