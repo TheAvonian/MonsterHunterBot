@@ -55,7 +55,7 @@ namespace MonsterHunterBot.Commands
             UpdateJson(configHunter);
 
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
-            await UpdateDamageDisplay(configHunter.Hunter, ctx);
+            //await UpdateDamageDisplay(configHunter.Hunter, ctx);
         }
 
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
@@ -124,7 +124,7 @@ namespace MonsterHunterBot.Commands
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
             var Interactivity = ctx.Client.GetInteractivity();
 
-            var HelmetEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698375263301402655);
+            var HelmetEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370227997507594);
               
             var ArmorEmbed = new DiscordEmbedBuilder
             {
