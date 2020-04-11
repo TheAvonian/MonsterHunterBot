@@ -1,5 +1,6 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using MonsterHunterBot.Commands;
@@ -18,6 +19,7 @@ namespace MonsterHunterBot
         public CommandsNextExtension Commands { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
         public static List<ConfigHunterJson> HunterList { get; set; } = new List<ConfigHunterJson>();
+        public static List<DiscordEmoji> Emojis { get; set; } = new List<DiscordEmoji>();
         public async Task RunAsync()
         {
             string json = string.Empty;
@@ -67,7 +69,6 @@ namespace MonsterHunterBot
 
             Commands.RegisterCommands<BasicCommands>();
             Commands.RegisterCommands<MonsterHunterCommands>();
-
             await Client.ConnectAsync();
 
             await Task.Delay(-1);
