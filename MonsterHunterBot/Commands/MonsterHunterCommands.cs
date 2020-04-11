@@ -150,20 +150,23 @@ namespace MonsterHunterBot.Commands
                 Description = "React to view each armor slot"
             };
 
+            var ArmorDisplay = await ctx.Channel.SendMessageAsync(embed: ArmorEmbed);
+            await ArmorDisplay.CreateReactionAsync(HelmetEmoji);
+            await ArmorDisplay.CreateReactionAsync(ChestplateEmoji);
+            await ArmorDisplay.CreateReactionAsync(BracersEmoji);
+            await ArmorDisplay.CreateReactionAsync(WaistEmoji);
+            await ArmorDisplay.CreateReactionAsync(GreavesEmoji);
+            await Task.Delay(100);
+
             //Sends the embed, adds reactions, and resends based on choice
             while (true)
             {
-                var ArmorDisplay = await ctx.Channel.SendMessageAsync(embed: ArmorEmbed);
-                await ArmorDisplay.CreateReactionAsync(HelmetEmoji);
-                await ArmorDisplay.CreateReactionAsync(ChestplateEmoji);
-                await ArmorDisplay.CreateReactionAsync(BracersEmoji);
-                await ArmorDisplay.CreateReactionAsync(WaistEmoji);
-                await ArmorDisplay.CreateReactionAsync(GreavesEmoji);
-                await Task.Delay(100);
-                var reaction = await Interactivity.WaitForReactionAsync(x => x.Message == ArmorDisplay && ctx.Message.Author.Id == ctx.Member.Id && (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji || x.Emoji == GreavesEmoji), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                var reaction = await Interactivity.WaitForReactionAsync(
+                    x => x.Message == ArmorDisplay && x.Message.Author.Id == ctx.Member.Id && 
+                    (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji || x.Emoji == GreavesEmoji), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 if (reaction.Result is null)
                 {
-                    await ctx.Channel.SendMessageAsync("it is null bye bye");
+                    await ctx.Channel.DeleteMessageAsync(ArmorDisplay);
                     break;
                 }
                 
@@ -193,16 +196,17 @@ namespace MonsterHunterBot.Commands
                     equipment = hunter.ArmorSlots[4];
                     ArmorEmbed.Title = hunter.Name + "'s Greaves Slot";
                 }
-                else { continue; }
+                else 
+                    continue;
+
+                ArmorEmbed.ClearFields();
 
                 ArmorEmbed.Description = equipment.Name;
                 ArmorEmbed.AddField("Defense", equipment.Defense.ToString());
                 ArmorEmbed.AddField("Description", equipment.Description);
 
-                await ArmorDisplay.DeleteAsync();
+                await ArmorDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(ArmorEmbed));
             }
-            await ctx.Channel.SendMessageAsync("it is null bye bye 2");
-            
         }
 
         public async Task UpdateChannel(CommandContext ctx, Monster Monster)
