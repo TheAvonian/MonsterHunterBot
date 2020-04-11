@@ -12,11 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="bin\Debug\netcoreapp3.1\Hunters\1412176151.json" />
-    <Content Include="bin\Debug\netcoreapp3.1\Hunters\926977972.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00683" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00683" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00683" />
@@ -26,6 +21,10 @@
     <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00683" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00683" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00683" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="bin\Debug\netcoreapp3.1\Servers\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

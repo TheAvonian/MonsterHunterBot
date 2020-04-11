@@ -18,8 +18,8 @@ namespace MonsterHunterBot
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
-        public static List<ConfigHunterJson> HunterList { get; set; } = new List<ConfigHunterJson>();
-        public static List<DiscordEmoji> Emojis { get; set; } = new List<DiscordEmoji>();
+        public static Dictionary<ulong, List<ConfigHunterJson>> ServerHunterList { get; set; } = new Dictionary<ulong, List<ConfigHunterJson>>();
+
         public async Task RunAsync()
         {
             string json = string.Empty;
@@ -30,14 +30,22 @@ namespace MonsterHunterBot
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-            var jsonFiles = Directory.EnumerateFiles(".\\Hunters", "*.json");
-            foreach(string j in jsonFiles)
+            string[] serverDirectories = Directory.GetDirectories(".\\Servers");
+            foreach(string sD in serverDirectories)
             {
-                using (var fs = File.OpenRead(j))
-                using (var sr = new StreamReader(fs, new UTF8Encoding()))
-                    json = await sr.ReadToEndAsync().ConfigureAwait(false);
-                HunterList.Add(JsonConvert.DeserializeObject<ConfigHunterJson>(json));
+                var jsonFiles = Directory.EnumerateFiles(sD + "\\Hunters", "*.json");
+                var huntersTemp = new List<ConfigHunterJson>();
+                foreach (string j in jsonFiles)
+                {
+                    using (var fs = File.OpenRead(j))
+                    using (var sr = new StreamReader(fs, new UTF8Encoding()))
+                        json = await sr.ReadToEndAsync().ConfigureAwait(false);
+                    huntersTemp.Add(JsonConvert.DeserializeObject<ConfigHunterJson>(json));
+                }
+                ServerHunterList[ulong.Parse(sD.Substring(sD.LastIndexOf('\\') + 1))] = huntersTemp;
             }
+            
+            
             
             var config = new DiscordConfiguration
             {
