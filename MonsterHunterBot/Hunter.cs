@@ -28,6 +28,7 @@ namespace MonsterHunterBot
 
             if (Health < 0)
                 Health = 0;
+            
         }
 
         //heals the player with the value entered

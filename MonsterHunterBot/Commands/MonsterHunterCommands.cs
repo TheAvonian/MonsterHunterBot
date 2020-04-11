@@ -94,9 +94,10 @@ namespace MonsterHunterBot.Commands
         {
             if (NoHunter(ctx)) return;
             string uuid = ctx.Member.GetHashCode().ToString();
-            Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
-            hunter.TakeDamage(damage);
-            await UpdateDamageDisplay(hunter, ctx);
+            Bot.HunterList.Find(u => u.Uuid == uuid).Hunter.TakeDamage(damage);
+            
+            await UpdateDamageDisplay(Bot.HunterList.Find(u => u.Uuid == uuid).Hunter, ctx);
+            UpdateJson(Bot.HunterList.Find(u => u.Uuid == uuid));
         }
 
         [Command("DamageDisplay")]
