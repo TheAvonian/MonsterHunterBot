@@ -11,6 +11,7 @@ namespace MonsterHunterBot
         public string Description { get; private set; }
         public string Icon { get; private set; }
         public Boolean Equipped { get; private set; } = false;
+        public int SlotIndex { get; private set; }
 
         public Armor(string name, int defense, string description, string icon)
         {
