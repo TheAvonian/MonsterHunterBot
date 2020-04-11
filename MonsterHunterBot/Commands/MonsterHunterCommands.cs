@@ -25,23 +25,41 @@ namespace MonsterHunterBot.Commands
         [Command("BeginMH")]
         public async Task BeginMH(CommandContext ctx)
         {
-            await ctx.Channel.SendMessageAsync("Are you sure you want to dedicate this channel to Monster Hunter? (yes/no)");
+            var dedicateMessage = await ctx.Channel.SendMessageAsync("Are you sure you want to dedicate this channel to Monster Hunter?");
 
-            var user = (await GetUserMessage(ctx)).ToString();
+            var Interactivity = ctx.Client.GetInteractivity();
+            var thumbsUp = DiscordEmoji.FromName(ctx.Client, ":+1:");
+            var thumbsDown = DiscordEmoji.FromName(ctx.Client, ":-1:");
 
-            if (user != "yes")
+            await dedicateMessage.CreateReactionAsync(thumbsUp);
+            await dedicateMessage.CreateReactionAsync(thumbsDown);
+            await Task.Delay(100);
+
+            var reaction = await Interactivity.WaitForReactionAsync(
+                    x => x.Message == dedicateMessage && x.User.Id == ctx.Member.Id &&
+                    (x.Emoji == thumbsUp || x.Emoji == thumbsDown ), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+
+            if (reaction.TimedOut)
             {
-                await ctx.Channel.SendMessageAsync("Okay then.");
+                await dedicateMessage.ModifyAsync("Timed out");
                 return;
             }
-            Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Hunters");
-            Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Monsters");
+            else if (reaction.Result.Emoji == thumbsDown)
+            {
+                await dedicateMessage.ModifyAsync("Okay then.");
+                return;
+            }
+            else
+            {
+                Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Hunters");
+                Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Monsters");
 
-            new ConfigMonsterJson() { ActiveMonster = new Monster("Empty Monster", 0, 0, 0, ctx.Guild) };
+                new ConfigMonsterJson() { ActiveMonster = new Monster("Empty Monster", 0, 0, 0, ctx.Guild) };
 
-            Bot.ServerHunterList[ctx.Guild.Id] = new List<ConfigHunterJson>();
+                Bot.ServerHunterList[ctx.Guild.Id] = new List<ConfigHunterJson>();
 
-            await ctx.Channel.SendMessageAsync("Done!");
+                await dedicateMessage.ModifyAsync("Done!");
+            }
         }
 
         [Command("CreateHunter"), Description("Creates the starting hunter")]

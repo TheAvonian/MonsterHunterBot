@@ -15,7 +15,7 @@ namespace MonsterHunterBot
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
         public Armor[] ArmorSlots { get; private set; } = { new Armor(), new Armor(), new Armor(), new Armor(), new Armor() };
-        public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", 1, "Your... hands?", 1, new List<String> { String"Punch" }, 0);
+        public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", "They're well, your... fists", 0, 0, "Fists");
 
         public Hunter(string name)
         {

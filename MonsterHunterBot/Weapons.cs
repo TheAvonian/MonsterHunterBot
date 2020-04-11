@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MonsterHunterBot
 {
-    public abstract class Weapons
+    public class Weapons
     {
         public string Name { get; private set; }
         public int AttackDamage { get; private set; }
