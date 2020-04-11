@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
@@ -121,15 +122,39 @@ namespace MonsterHunterBot.Commands
         {
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.HunterList.Find(u => u.Uuid == uuid).Hunter;
+            var Interactivity = ctx.Client.GetInteractivity();
 
+            var HelmetEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698375263301402655);
+              
             var ArmorEmbed = new DiscordEmbedBuilder
             {
                 Title = hunter.Name + "'s Armor Loadout",
                 Color = DiscordColor.Blue,
+                Description = "React to view each armor slot"
             };
-            ArmorEmbed.AddField("Head:", hunter.ArmorSlots[0].Name + " Defense: " + hunter.ArmorSlots[0].Defense + ". " + hunter.ArmorSlots[0].Description);
 
-            await ctx.Channel.SendMessageAsync(embed:ArmorEmbed);
+            //Sends the embed, adds reactions, and resends based on choice
+            while (true)
+            {
+                var ArmorDisplay = await ctx.Channel.SendMessageAsync(embed: ArmorEmbed);
+                await ArmorDisplay.CreateReactionAsync(HelmetEmoji);
+
+                var reaction = await Interactivity.WaitForReactionAsync(x => x.Channel == ctx.Channel).ConfigureAwait(false);
+
+                Armor equipment;
+                if (ArmorEmbed.Title != hunter.Name + "'s Helmet Slot" && reaction.Result.Emoji == HelmetEmoji)
+                {
+                    equipment = hunter.ArmorSlots[0];
+                    ArmorEmbed.Title = hunter.Name + "'s Helmet Slot";
+                    ArmorEmbed.Description = equipment.Name;
+                    ArmorEmbed.AddField("Defense", equipment.Defense.ToString());
+                    ArmorEmbed.AddField("Description", equipment.Description);
+                }
+
+                await ArmorDisplay.DeleteAsync();
+            }
+
+            
         }
 
         public async Task UpdateChannel(CommandContext ctx, Monster Monster)
