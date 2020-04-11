@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="bin\Debug\netcoreapp3.1\Servers\" />
+    <Folder Include="WeaponTypes\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

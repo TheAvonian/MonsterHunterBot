@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Text;
 
 namespace MonsterHunterBot
@@ -14,6 +15,7 @@ namespace MonsterHunterBot
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
         public Armor[] ArmorSlots { get; private set; } = { new Armor(), new Armor(), new Armor(), new Armor(), new Armor() };
+        public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", 1, "Your... hands?", 1, new List<String> { String"Punch" }, 0);
 
         public Hunter(string name)
         {

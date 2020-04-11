@@ -20,4 +20,10 @@ namespace MonsterHunterBot
         [JsonProperty("Hunter")]
         public Hunter Hunter { get; set; }
     }
+
+    public struct ConfigMonsterJson
+    {
+        [JsonProperty("ActiveMonster")]
+        public Monster ActiveMonster { get; set; }
+    }
 }

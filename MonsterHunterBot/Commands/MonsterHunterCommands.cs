@@ -37,6 +37,8 @@ namespace MonsterHunterBot.Commands
             Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Hunters");
             Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Monsters");
 
+            new ConfigMonsterJson() { ActiveMonster = new Monster("Empty Monster", 0, 0, 0, ctx.Guild) };
+
             Bot.ServerHunterList[ctx.Guild.Id] = new List<ConfigHunterJson>();
 
             await ctx.Channel.SendMessageAsync("Done!");
@@ -76,7 +78,7 @@ namespace MonsterHunterBot.Commands
             UpdateJson(ctx);
 
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
-            //await UpdateDamageDisplay(configHunter.Hunter, ctx);
+            await UpdateDamageDisplay(configHunter.Hunter, ctx);
         }
 
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
@@ -125,7 +127,9 @@ namespace MonsterHunterBot.Commands
         [Command("SpawnMonster")]
         public async Task SpawnMonster(CommandContext ctx)
         { 
-            Monster Jagras = new Monster("Jagras", 25, 1, 2);
+            //Checks that a monster isnt already active
+
+            Monster Jagras = new Monster("Jagras", 25, 1, 2, ctx.Guild);
             await UpdateChannel(ctx, Jagras);
 
             var MonsterEmbed = new DiscordEmbedBuilder
@@ -136,6 +140,9 @@ namespace MonsterHunterBot.Commands
             };
 
             await ctx.Channel.SendMessageAsync(embed:MonsterEmbed);
+
+            //wait until health drops to 0
+            
         }
 
         [Command("DisplayArmor")]
@@ -224,6 +231,8 @@ namespace MonsterHunterBot.Commands
                 a.Name = Monster.Name;
                 a.Topic = Monster.Health + "/" + Monster.MaxHealth;
             });
+            //When monster health drops to 0 revert channel back to normal
+            
         }
 
         public async Task UpdateDamageDisplay(Hunter hunter, CommandContext ctx)
