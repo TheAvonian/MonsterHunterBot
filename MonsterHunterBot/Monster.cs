@@ -23,7 +23,7 @@ namespace MonsterHunterBot
         public Monster(string name, int maxHealth, int rank, int critChance, DiscordGuild discordGuild)
         {
             Name = name;
-            Health = MaxHealth;
+            Health = maxHealth;
             MaxHealth = maxHealth;
             Rank = rank;
             CritChance = critChance;
@@ -57,7 +57,7 @@ namespace MonsterHunterBot
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
 
             //Adds the person who hit the monster to the target pool
-            Targets.Add(uuid, hunter);
+            Targets[uuid] = hunter;
 
             //if dictionary didnt get a new value then its a duplicate and dont add the uuid to list
             if(Targets.Count > targetsOldLength)
