@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30002.166
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonsterHunterBot", "MonsterHunterBot\MonsterHunterBot.csproj", "{7B9971C5-EA80-4302-9B65-C80CB52225E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonsterHunterBot", "MonsterHunterBot\MonsterHunterBot.csproj", "{7B9971C5-EA80-4302-9B65-C80CB52225E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DB4FDDFD-2931-42A4-B1C3-26D626BF48A5}"
+	ProjectSection(SolutionItems) = preProject
+		index.html = index.html
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
