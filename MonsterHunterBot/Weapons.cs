@@ -30,7 +30,7 @@ namespace MonsterHunterBot
 
             if(WeaponType == "Fists")
             {
-                MoveSet.Add(new Moves("Punch", 0, 0, "Uppercuts, jabs, strikes, its all just a punch really"));
+                MoveSet.Add(new Moves("Punch", 0, 0, "Uppercuts, jabs, strikes, its all just a punch really", 2));
             }
         }
 
