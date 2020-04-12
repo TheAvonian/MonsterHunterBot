@@ -148,7 +148,7 @@ namespace MonsterHunterBot.Commands
             //Checks that a monster isnt already active
 
             Monster Jagras = new Monster("Jagras", 25, 1, 2, ctx.Guild);
-            await UpdateChannel(ctx, Jagras);
+            await UpdateChannelAsync(ctx, Jagras);
 
             var MonsterEmbed = new DiscordEmbedBuilder
             {
@@ -206,7 +206,7 @@ namespace MonsterHunterBot.Commands
                     x => x.Message == HunterDisplay && x.User.Id == ctx.Member.Id && 
                     (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji 
                     || x.Emoji == GreavesEmoji || x.Emoji == SwordEmoji || x.Emoji == StatsEmoji), 
-                    TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    TimeSpan.FromSeconds(30)).ConfigureAwait(false);
 
                 HunterEmbed.ClearFields();
                 if (reaction.Result is null)
@@ -281,7 +281,29 @@ namespace MonsterHunterBot.Commands
             }
         }
 
-        public async Task UpdateChannel(CommandContext ctx, Monster Monster)
+        [Command("Attack")]
+        public async Task Attack(CommandContext ctx, string MoveName)
+        {
+            string uuid = ctx.Member.GetHashCode().ToString();
+            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
+
+            //finds the move the hunter wants to use (if it exits)
+            if(hunter.CurrentWeapon.MoveSet.Any(u => u.Name == MoveName))
+            {
+                Moves move = hunter.CurrentWeapon.MoveSet.Find(u => u.Name == MoveName);
+
+                Monster monster = Bot.ServerActiveMonster[ctx.Guild.Id].Monster;
+                monster.TakeDamage(move.GenerateDamage(), ctx);
+                UpdateMonsterJson(ctx);
+                await UpdateChannelAsync(ctx, monster);
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync("You don't seem to know that move... Back to the Training Yard!");
+            }
+        }
+
+        public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
         {
             await ctx.Channel.ModifyAsync(a =>
             {
