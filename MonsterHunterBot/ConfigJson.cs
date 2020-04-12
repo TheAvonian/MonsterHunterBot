@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace MonsterHunterBot
 {
@@ -23,7 +24,7 @@ namespace MonsterHunterBot
 
     public struct ConfigMonsterJson
     {
-        [JsonProperty("ActiveMonster")]
-        public Monster ActiveMonster { get; set; }
+        [JsonProperty("Monster")]
+        public Monster Monster { get; set; }
     }
 }
