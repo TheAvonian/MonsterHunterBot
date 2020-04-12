@@ -34,7 +34,7 @@ namespace MonsterHunterBot.Commands
             await dedicateMessage.CreateReactionAsync(thumbsUp);
             await dedicateMessage.CreateReactionAsync(thumbsDown);
             await Task.Delay(100);
-
+            
             var reaction = await Interactivity.WaitForReactionAsync(
                     x => x.Message == dedicateMessage && x.User.Id == ctx.Member.Id && ctx.Member.PermissionsIn(ctx.Channel).HasPermission(Permissions.Administrator) &&
                     (x.Emoji == thumbsUp || x.Emoji == thumbsDown ), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
@@ -67,7 +67,7 @@ namespace MonsterHunterBot.Commands
         {
             
             // Checks the hunter list json for already created uuid and returns if true
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
 
             if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
             {
@@ -89,12 +89,13 @@ namespace MonsterHunterBot.Commands
                 return;
             }
 
+            var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("00FF00"), false, false);
             // Adds new hunter to the hunters list
-            var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.GetHashCode().ToString() };
+            var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id, Role =  playerRole };
             Bot.ServerHunterList[ctx.Guild.Id].Add(configHunter);
 
             UpdateHunterJson(ctx);
-
+            await ctx.Member.GrantRoleAsync(playerRole);
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
             await UpdateDamageDisplay(configHunter.Hunter, ctx);
         }
@@ -103,12 +104,13 @@ namespace MonsterHunterBot.Commands
         public async Task DeleteMyHunter(CommandContext ctx)
         {
             if (NoHunter(ctx)) return;
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             await ctx.Channel.SendMessageAsync("Are you sure you wish to delete your hunter? (yes/no)");
             var userInput = (await GetUserMessage(ctx)).ToString();
             if (userInput == "yes")
             {
                 DeleteHunterJson(ctx);
+                await Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Role.DeleteAsync();
                 Bot.ServerHunterList[ctx.Guild.Id].RemoveAll(u => u.Uuid == uuid);
                 await ctx.Channel.SendMessageAsync("Deletion successful.");
             }
@@ -118,7 +120,7 @@ namespace MonsterHunterBot.Commands
         public async Task Health(CommandContext ctx)
         {
             if (NoHunter(ctx)) return;
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
             await ctx.Channel.SendMessageAsync(hunter.Name + " has " + hunter.Health + "/" + hunter.MaxHealth + " currently");
         }
@@ -127,7 +129,7 @@ namespace MonsterHunterBot.Commands
         public async Task Hurt(CommandContext ctx, int damage)
         {
             if (NoHunter(ctx)) return;
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter.TakeDamage(damage);
             
             await UpdateDamageDisplay(Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter, ctx);
@@ -137,7 +139,7 @@ namespace MonsterHunterBot.Commands
         [Command("DamageDisplay")]
         public async Task DamageDisplay(CommandContext ctx)
         {
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
             await UpdateDamageDisplay(hunter, ctx);
         }
@@ -170,7 +172,7 @@ namespace MonsterHunterBot.Commands
         [Command("HunterDisplay")]
         public async Task HunterDisplay(CommandContext ctx)
         {
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
             var Interactivity = ctx.Client.GetInteractivity();
 
@@ -284,7 +286,7 @@ namespace MonsterHunterBot.Commands
         [Command("Attack")]
         public async Task Attack(CommandContext ctx)
         {
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
             var Interactivity = ctx.Client.GetInteractivity();
 
@@ -349,7 +351,7 @@ namespace MonsterHunterBot.Commands
 
         public bool NoHunter(CommandContext ctx)
         {
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             if (!Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
             {
                 ctx.Channel.SendMessageAsync("Okay real idiot here with no hunter trying to use a hunter command...");
@@ -365,12 +367,12 @@ namespace MonsterHunterBot.Commands
 
         public void UpdateHunterJson(CommandContext ctx)
         {
-            File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.GetHashCode().ToString()).Uuid + ".json", JsonConvert.SerializeObject(Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.GetHashCode().ToString()), Formatting.Indented));
+            File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.Id).Uuid + ".json", JsonConvert.SerializeObject(Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.Id), Formatting.Indented));
         }
 
         public void DeleteHunterJson(CommandContext ctx)
         {
-            File.Delete(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.GetHashCode().ToString()).Uuid + ".json");
+            File.Delete(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.Id).Uuid + ".json");
         }
 
         public async Task<string> GetUserMessage(CommandContext ctx)
