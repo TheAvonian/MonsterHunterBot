@@ -20,7 +20,7 @@ namespace MonsterHunterBot
             Description = description;
         }
 
-        public int generateDamage() // Perhaps moves should have their own additonal crit chance or lack there of
+        public int GenerateDamage() // Perhaps moves should have their own additonal crit chance or lack there of
         {
             int damage = new Random().Next(DamageMin, DamageMax);
 

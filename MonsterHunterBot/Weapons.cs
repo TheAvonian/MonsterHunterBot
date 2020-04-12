@@ -12,7 +12,7 @@ namespace MonsterHunterBot
         public int AttackDamage { get; private set; }
         public string Description { get; private set; }
         public int CritChance { get; private set; }
-        public List<Moves> MoveSet { get; private set; } 
+        public List<Moves> MoveSet { get; private set; } = new List<Moves>();
         public int Rank { get; private set; } //Represents the weapons average rank it is effective against
         public string WeaponType { get; private set; }
 
@@ -35,7 +35,7 @@ namespace MonsterHunterBot
 
         public int Attack(Moves move)
         {
-            int damage = move.generateDamage();
+            int damage = move.GenerateDamage();
 
             //Handle crit chance
             double random = new Random().NextDouble() * 100;

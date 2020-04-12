@@ -49,12 +49,12 @@ namespace MonsterHunterBot.Commands
                 await dedicateMessage.ModifyAsync("Okay then.");
                 return;
             }
-            else
+            else if(reaction.Result.Emoji == thumbsUp)
             {
                 Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Hunters");
                 Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Monsters");
 
-                new ConfigMonsterJson() { ActiveMonster = new Monster("Empty Monster", 0, 0, 0, ctx.Guild) };
+                //new ConfigMonsterJson() { ActiveMonster = new Monster("Empty Monster", 0, 0, 0, ctx.Guild) };
 
                 Bot.ServerHunterList[ctx.Guild.Id] = new List<ConfigHunterJson>();
 
