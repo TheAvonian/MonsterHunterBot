@@ -97,7 +97,7 @@ namespace MonsterHunterBot.Commands
             UpdateHunterJson(ctx);
             await ctx.Member.GrantRoleAsync(playerRole);
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
-            await UpdateDamageDisplay(configHunter.Hunter, ctx);
+            //await UpdateDamageDisplay(configHunter.Hunter, ctx);
         }
 
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
@@ -132,7 +132,7 @@ namespace MonsterHunterBot.Commands
             ulong uuid = ctx.Member.Id;
             Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter.TakeDamage(damage);
             
-            await UpdateDamageDisplay(Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter, ctx);
+            //await UpdateDamageDisplay(Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter, ctx);
             UpdateHunterJson(ctx);
         }
 
