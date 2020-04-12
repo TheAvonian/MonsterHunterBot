@@ -282,23 +282,23 @@ namespace MonsterHunterBot.Commands
         }
 
         [Command("Attack")]
-        public async Task Attack(CommandContext ctx, string MoveName)
+        public async Task Attack(CommandContext ctx)
         {
             string uuid = ctx.Member.GetHashCode().ToString();
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
+            var Interactivity = ctx.Client.GetInteractivity();
 
-            //finds the move the hunter wants to use (if it exits)
-            if(hunter.CurrentWeapon.MoveSet.Any(u => u.Name == MoveName))
+            var AttackEmbed = new DiscordEmbedBuilder {
+                Title = hunter.Name + "'s Attack Panel",
+                Description = "React to select an ability/move to use!",
+                ThumbnailUrl = "https://cdn.pixabay.com/photo/2017/05/03/15/26/sword-2281334__180.png"
+            };
+
+            for(int i = 1; i < hunter.CurrentWeapon.MoveList.Count; i++)
             {
-                Moves move = hunter.CurrentWeapon.MoveSet.Find(u => u.Name == MoveName);
-
-                Monster monster = Bot.ServerActiveMonster[ctx.Guild.Id].Monster;
-                monster.TakeDamage(move.GenerateDamage(), ctx);
-                UpdateMonsterJson(ctx);
-                await UpdateChannelAsync(ctx, monster);
+                AttackEmbed.AddField("**" + i + ":**", hunter.CurrentWeapon.MoveSet[i].toString());
             }
-            else
-                await ctx.Channel.SendMessageAsync("You don't seem to know that move... Back to the Training Yard!");
+            
         }
 
         public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
