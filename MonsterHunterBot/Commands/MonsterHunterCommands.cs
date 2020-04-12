@@ -298,9 +298,7 @@ namespace MonsterHunterBot.Commands
                 await UpdateChannelAsync(ctx, monster);
             }
             else
-            {
                 await ctx.Channel.SendMessageAsync("You don't seem to know that move... Back to the Training Yard!");
-            }
         }
 
         public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
