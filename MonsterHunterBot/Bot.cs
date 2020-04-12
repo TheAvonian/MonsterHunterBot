@@ -19,6 +19,7 @@ namespace MonsterHunterBot
         public CommandsNextExtension Commands { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
         public static Dictionary<ulong, List<ConfigHunterJson>> ServerHunterList { get; set; } = new Dictionary<ulong, List<ConfigHunterJson>>();
+        public static Dictionary<ulong, ConfigMonsterJson> ServerActiveMonster { get; set; } = new Dictionary<ulong, ConfigMonsterJson>();
 
         public async Task RunAsync()
         {
@@ -43,6 +44,18 @@ namespace MonsterHunterBot
                     huntersTemp.Add(JsonConvert.DeserializeObject<ConfigHunterJson>(json));
                 }
                 ServerHunterList[ulong.Parse(sD.Substring(sD.LastIndexOf('\\') + 1))] = huntersTemp;
+
+                try
+                {
+                    using (var fs = File.OpenRead(sD + "\\Monsters\\ActiveMonster.json"))
+                    using (var sr = new StreamReader(fs, new UTF8Encoding()))
+                        json = await sr.ReadToEndAsync().ConfigureAwait(false);
+                    ServerActiveMonster[ulong.Parse(sD.Substring(sD.LastIndexOf('\\') + 1))] = JsonConvert.DeserializeObject<ConfigMonsterJson>(json);
+                }
+                catch(FileNotFoundException)
+                {
+                    Console.WriteLine("No Active Monster json in {0}\\Monsters\\ActiveMonster.json", sD);
+                }
             }
             
             
