@@ -164,7 +164,8 @@ namespace MonsterHunterBot.Commands
             Bot.ServerActiveMonster[ctx.Guild.Id] = new ConfigMonsterJson() { Monster = Jagras };
             UpdateMonsterJson(ctx);
 
-            // make sure to update the active monster in the serveractivemonster dictionary every time health changes and then update json (just set health directly dont use variable for the monster
+            // make sure to update the active monster in the serveractivemonster dictionary every 
+            //time health changes and then update json (just set health directly dont use variable for the monster
             //wait until health drops to 0
 
         }
@@ -173,135 +174,175 @@ namespace MonsterHunterBot.Commands
         public async Task HunterDisplay(CommandContext ctx)
         {
             ulong uuid = ctx.Member.Id;
-            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
-            var Interactivity = ctx.Client.GetInteractivity();
-
-            var HelmetEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370227997507594);
-            var ChestplateEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370277641289738);
-            var WaistEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370363079524382);
-            var GreavesEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370396021587978);
-            var BracersEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370329512378531);
-            var StatsEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698752321127055380);
-            var SwordEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698753308470280213);
-
-            var HunterEmbed = new DiscordEmbedBuilder
+            if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
             {
-                Title = hunter.Name,
-                Color = DiscordColor.DarkGreen,
-                Description = "Select the reactions to get info on your Hunter!",
-            };
 
-            var HunterDisplay = await ctx.Channel.SendMessageAsync(embed: HunterEmbed);
-            await HunterDisplay.CreateReactionAsync(StatsEmoji);
-            await HunterDisplay.CreateReactionAsync(SwordEmoji);
-            await HunterDisplay.CreateReactionAsync(HelmetEmoji);
-            await HunterDisplay.CreateReactionAsync(ChestplateEmoji);
-            await HunterDisplay.CreateReactionAsync(BracersEmoji);
-            await HunterDisplay.CreateReactionAsync(WaistEmoji);
-            await HunterDisplay.CreateReactionAsync(GreavesEmoji);
-            await Task.Delay(100);
 
-            //Sends the embed, adds reactions, and resends based on choice
-            while (true)
-            {
-                var reaction = await Interactivity.WaitForReactionAsync(
-                    x => x.Message == HunterDisplay && x.User.Id == ctx.Member.Id && 
-                    (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji 
-                    || x.Emoji == GreavesEmoji || x.Emoji == SwordEmoji || x.Emoji == StatsEmoji), 
-                    TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+                Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
+                var Interactivity = ctx.Client.GetInteractivity();
 
-                HunterEmbed.ClearFields();
-                if (reaction.Result is null)
+                var HelmetEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370227997507594);
+                var ChestplateEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370277641289738);
+                var WaistEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370363079524382);
+                var GreavesEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370396021587978);
+                var BracersEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698370329512378531);
+                var StatsEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698752321127055380);
+                var SwordEmoji = DiscordEmoji.FromGuildEmote(ctx.Client, 698753308470280213);
+
+                var HunterEmbed = new DiscordEmbedBuilder
                 {
-                    await ctx.Channel.DeleteMessageAsync(HunterDisplay);
-                    break;
-                }
+                    Title = hunter.Name,
+                    Color = DiscordColor.DarkGreen,
+                    Description = "Select the reactions to get info on your Hunter!",
+                };
 
-                if (HunterEmbed.Title != hunter.Name + "'s Weapon Slot" && reaction.Result.Emoji == SwordEmoji)
-                {
-                    HunterEmbed.Title = "" + hunter.Name + "'s Weapon Slot";
-                    HunterEmbed.Description = "***" + hunter.CurrentWeapon.Name + "***";
-                    HunterEmbed.AddField("Description: ", hunter.CurrentWeapon.Description);
-                    HunterEmbed.AddField("Weapon Type: ", hunter.CurrentWeapon.WeaponType);
-                    HunterEmbed.AddField("Rank: ", hunter.CurrentWeapon.Rank.ToString());
-                    HunterEmbed.AddField("Move List: ", hunter.CurrentWeapon.MoveSet.ToString());
-                    HunterEmbed.AddField("Crit Chance: ", hunter.CurrentWeapon.CritChance.ToString());
-                }
-                else if (HunterEmbed.Title != hunter.Name + "'s Stats" && reaction.Result.Emoji == StatsEmoji)
-                {
-                    HunterEmbed.Title = hunter.Name + "'s Stats";
-                    HunterEmbed.Description = "";
+                var HunterDisplay = await ctx.Channel.SendMessageAsync(embed: HunterEmbed);
+                await HunterDisplay.CreateReactionAsync(StatsEmoji);
+                await HunterDisplay.CreateReactionAsync(SwordEmoji);
+                await HunterDisplay.CreateReactionAsync(HelmetEmoji);
+                await HunterDisplay.CreateReactionAsync(ChestplateEmoji);
+                await HunterDisplay.CreateReactionAsync(BracersEmoji);
+                await HunterDisplay.CreateReactionAsync(WaistEmoji);
+                await HunterDisplay.CreateReactionAsync(GreavesEmoji);
+                await Task.Delay(100);
 
-                    int defense = 0;
-                    for(int i = 0; i < hunter.ArmorSlots.Length; i++)
+                //Sends the embed, adds reactions, and resends based on choice
+                while (true)
+                {
+                    var reaction = await Interactivity.WaitForReactionAsync(
+                        x => x.Message == HunterDisplay && x.User.Id == ctx.Member.Id &&
+                        (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji
+                        || x.Emoji == GreavesEmoji || x.Emoji == SwordEmoji || x.Emoji == StatsEmoji),
+                        TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+                    if (reaction.Result is null)
                     {
-                        defense += hunter.ArmorSlots[i].Defense;
+                        await ctx.Channel.DeleteMessageAsync(HunterDisplay);
+                        break;
                     }
 
-                    HunterEmbed.AddField("Your total defense is: ", defense.ToString(), true);
-                    HunterEmbed.AddField("Your max health is: ", hunter.MaxHealth.ToString(), true);
-                    HunterEmbed.AddField("Monsters hunted: ", "0", true); //Track monster kills!!!
-                    HunterEmbed.AddField("Your rank is: ", "0", true); // Calculate rank!
-                }
-                else
-                {
-                    Armor equipment = null;
-                    if (HunterEmbed.Title != hunter.Name + "'s Helmet Slot" && reaction.Result.Emoji == HelmetEmoji)
+                    await HunterDisplay.DeleteReactionAsync(reaction.Result.Emoji, reaction.Result.User);
+
+                    HunterEmbed.ClearFields();
+                    if (HunterEmbed.Title != hunter.Name + "'s Weapon Slot" && reaction.Result.Emoji == SwordEmoji)
                     {
-                        equipment = hunter.ArmorSlots[0];
-                        HunterEmbed.Title = hunter.Name + "'s Helmet Slot";
+                        HunterEmbed.Title = "" + hunter.Name + "'s Weapon Slot";
+                        HunterEmbed.Description = "***" + hunter.CurrentWeapon.Name + "***";
+                        HunterEmbed.AddField("Description: ", hunter.CurrentWeapon.Description);
+                        HunterEmbed.AddField("Weapon Type: ", hunter.CurrentWeapon.WeaponType);
+                        HunterEmbed.AddField("Rank: ", hunter.CurrentWeapon.Rank.ToString());
+                        HunterEmbed.AddField("Move List: ", hunter.CurrentWeapon.MoveSet.ToString());
+                        HunterEmbed.AddField("Crit Chance: ", hunter.CurrentWeapon.CritChance.ToString());
                     }
-                    else if (HunterEmbed.Title != hunter.Name + "'s Chest Slot" && reaction.Result.Emoji == ChestplateEmoji)
+                    else if (HunterEmbed.Title != hunter.Name + "'s Stats" && reaction.Result.Emoji == StatsEmoji)
                     {
-                        equipment = hunter.ArmorSlots[1];
-                        HunterEmbed.Title = hunter.Name + "'s Chest Slot";
-                    }
-                    else if (HunterEmbed.Title != hunter.Name + "'s Bracers Slot" && reaction.Result.Emoji == BracersEmoji)
-                    {
-                        equipment = hunter.ArmorSlots[2];
-                        HunterEmbed.Title = hunter.Name + "'s Bracers Slot";
-                    }
-                    else if (HunterEmbed.Title != hunter.Name + "'s Waist Slot" && reaction.Result.Emoji == WaistEmoji)
-                    {
-                        equipment = hunter.ArmorSlots[3];
-                        HunterEmbed.Title = hunter.Name + "'s Waist Slot";
-                    }
-                    else if (HunterEmbed.Title != hunter.Name + "'s Greaves Slot" && reaction.Result.Emoji == GreavesEmoji)
-                    {
-                        equipment = hunter.ArmorSlots[4];
-                        HunterEmbed.Title = hunter.Name + "'s Greaves Slot";
+                        HunterEmbed.Title = hunter.Name + "'s Stats";
+                        HunterEmbed.Description = "";
+
+                        int defense = 0;
+                        for (int i = 0; i < hunter.ArmorSlots.Length; i++)
+                        {
+                            defense += hunter.ArmorSlots[i].Defense;
+                        }
+
+                        HunterEmbed.AddField("Your total defense is: ", defense.ToString(), true);
+                        HunterEmbed.AddField("Your max health is: ", hunter.MaxHealth.ToString(), true);
+                        HunterEmbed.AddField("Monsters hunted: ", "0", true); //Track monster kills!!!
+                        HunterEmbed.AddField("Your rank is: ", "0", true); // Calculate rank!
                     }
                     else
-                        continue;
+                    {
+                        Armor equipment = null;
+                        if (HunterEmbed.Title != hunter.Name + "'s Helmet Slot" && reaction.Result.Emoji == HelmetEmoji)
+                        {
+                            equipment = hunter.ArmorSlots[0];
+                            HunterEmbed.Title = hunter.Name + "'s Helmet Slot";
+                        }
+                        else if (HunterEmbed.Title != hunter.Name + "'s Chest Slot" && reaction.Result.Emoji == ChestplateEmoji)
+                        {
+                            equipment = hunter.ArmorSlots[1];
+                            HunterEmbed.Title = hunter.Name + "'s Chest Slot";
+                        }
+                        else if (HunterEmbed.Title != hunter.Name + "'s Bracers Slot" && reaction.Result.Emoji == BracersEmoji)
+                        {
+                            equipment = hunter.ArmorSlots[2];
+                            HunterEmbed.Title = hunter.Name + "'s Bracers Slot";
+                        }
+                        else if (HunterEmbed.Title != hunter.Name + "'s Waist Slot" && reaction.Result.Emoji == WaistEmoji)
+                        {
+                            equipment = hunter.ArmorSlots[3];
+                            HunterEmbed.Title = hunter.Name + "'s Waist Slot";
+                        }
+                        else if (HunterEmbed.Title != hunter.Name + "'s Greaves Slot" && reaction.Result.Emoji == GreavesEmoji)
+                        {
+                            equipment = hunter.ArmorSlots[4];
+                            HunterEmbed.Title = hunter.Name + "'s Greaves Slot";
+                        }
+                        else
+                            continue;
 
-                    HunterEmbed.Description = "***" + equipment.Name + "***";
-                    HunterEmbed.AddField("Defense", equipment.Defense.ToString());
-                    HunterEmbed.AddField("Description", equipment.Description);
+                        HunterEmbed.Description = "***" + equipment.Name + "***";
+                        HunterEmbed.AddField("Defense", equipment.Defense.ToString());
+                        HunterEmbed.AddField("Description", equipment.Description);
+                    }
+
+                    await HunterDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(HunterEmbed));
                 }
-
-                await HunterDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(HunterEmbed));
             }
+            else
+                await ctx.Channel.SendMessageAsync("Yeah so I'm not as mean as the other guy but that doesn't mean I'm going to let you use a hunter command " +
+                    "when you don't have a hunter. C'mon man...");
         }
 
         [Command("Attack")]
         public async Task Attack(CommandContext ctx)
         {
             ulong uuid = ctx.Member.Id;
-            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
-            var Interactivity = ctx.Client.GetInteractivity();
 
-            var AttackEmbed = new DiscordEmbedBuilder {
-                Title = hunter.Name + "'s Attack Panel",
-                Description = "React to select an ability/move to use!",
-                ThumbnailUrl = "https://cdn.pixabay.com/photo/2017/05/03/15/26/sword-2281334__180.png"
-            };
-
-            for(int i = 0; i < hunter.CurrentWeapon.MoveSet.Count; i++)
+            if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
             {
-                AttackEmbed.AddField("**" + (i + 1) + ":**", hunter.CurrentWeapon.MoveSet[i].toString());
-            }
+                Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
+                var Interactivity = ctx.Client.GetInteractivity();
 
-            await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
+                var AttackEmbed = new DiscordEmbedBuilder
+                {
+                    Title = hunter.Name + "'s Attack Panel",
+                    Description = "React to select an ability/move to use!",
+                    ThumbnailUrl = "https://cdn.pixabay.com/photo/2017/05/03/15/26/sword-2281334__180.png"
+                };
+
+                var OneEmoji = DiscordEmoji.FromName(ctx.Client, ":one:");
+                var TwoEmoji = DiscordEmoji.FromName(ctx.Client, ":two:");
+                var ThreeEmoji = DiscordEmoji.FromName(ctx.Client, ":three:");
+                var FourEmoji = DiscordEmoji.FromName(ctx.Client, ":four:");
+                var FiveEmoji = DiscordEmoji.FromName(ctx.Client, ":five:");
+                var SixEmoji = DiscordEmoji.FromName(ctx.Client, ":six:");
+                var SevenEmoji = DiscordEmoji.FromName(ctx.Client, ":seven:");
+                var EightEmoji = DiscordEmoji.FromName(ctx.Client, ":Eight:");
+                var NineEmoji = DiscordEmoji.FromName(ctx.Client, ":Nine:");
+
+                for (int i = 0; i < hunter.CurrentWeapon.MoveSet.Count; i++)
+                {
+                    AttackEmbed.AddField("**" + (i + 1) + ":**", hunter.CurrentWeapon.MoveSet[i].toString());
+                }
+
+                var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
+                await AttackDisplay.CreateReactionAsync(OneEmoji);
+                await AttackDisplay.CreateReactionAsync(TwoEmoji);
+                await AttackDisplay.CreateReactionAsync(ThreeEmoji);
+                await AttackDisplay.CreateReactionAsync(FourEmoji);
+                await AttackDisplay.CreateReactionAsync(FiveEmoji);
+                await AttackDisplay.CreateReactionAsync(SixEmoji);
+                await AttackDisplay.CreateReactionAsync(SevenEmoji);
+                await AttackDisplay.CreateReactionAsync(EightEmoji);
+                await AttackDisplay.CreateReactionAsync(NineEmoji);
+
+
+            }
+            else
+                await ctx.Channel.SendMessageAsync("Alright so let me get this straight, you're not a hunter... Yet you want to attack this monster?? " +
+                    "Doesn't seem like a smart idea. Let's just 'break;' quick");
+            //Haha what did you really come to the code to see if it actually used "break;" to get out of the function? No. I'm an else kinda guy but the joke wouldn't have worked
+            //unless I pretended I was using break; so just let this one slide, okay?
             
         }
 
@@ -367,7 +408,8 @@ namespace MonsterHunterBot.Commands
 
         public void UpdateHunterJson(CommandContext ctx)
         {
-            File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.Id).Uuid + ".json", JsonConvert.SerializeObject(Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.Id), Formatting.Indented));
+            File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.Id).Uuid + ".json", 
+                JsonConvert.SerializeObject(Bot.ServerHunterList[ctx.Guild.Id].Find(h => h.Uuid == ctx.Member.Id), Formatting.Indented));
         }
 
         public void DeleteHunterJson(CommandContext ctx)
