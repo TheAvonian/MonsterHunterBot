@@ -89,12 +89,13 @@ namespace MonsterHunterBot.Commands
                 return;
             }
 
+            var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("00FF00"), false, false);
             // Adds new hunter to the hunters list
-            var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id };
+            var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id, Role =  playerRole };
             Bot.ServerHunterList[ctx.Guild.Id].Add(configHunter);
 
             UpdateHunterJson(ctx);
-
+            await ctx.Member.GrantRoleAsync(playerRole);
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
             await UpdateDamageDisplay(configHunter.Hunter, ctx);
         }
@@ -109,6 +110,7 @@ namespace MonsterHunterBot.Commands
             if (userInput == "yes")
             {
                 DeleteHunterJson(ctx);
+                await Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Role.DeleteAsync();
                 Bot.ServerHunterList[ctx.Guild.Id].RemoveAll(u => u.Uuid == uuid);
                 await ctx.Channel.SendMessageAsync("Deletion successful.");
             }

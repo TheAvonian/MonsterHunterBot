@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DSharpPlus.Entities;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,8 +21,8 @@ namespace MonsterHunterBot
         public ulong Uuid { get; set; }
         [JsonProperty("Hunter")]
         public Hunter Hunter { get; set; }
-        [JsonProperty("RoleId")]
-        public ulong RoleId { get; set; }
+        [JsonProperty("Role")]
+        public DiscordRole Role { get; set; }
     }
 
     public struct ConfigMonsterJson
