@@ -18,8 +18,8 @@ namespace MonsterHunterBot
         public List<string> MoveList { get; private set; } //TODO make a "Moves" class and change this to a list of moves
         public int MaxHealth { get; }
         //The Hunters that the Monster would want to attack
-        public Dictionary<string, Hunter> Targets { get; private set; } = new Dictionary<string, Hunter>();
-        public List<string> UuidList { get; private set; } = new List<string>();
+        public Dictionary<ulong, Hunter> Targets { get; private set; } = new Dictionary<ulong, Hunter>();
+        public List<ulong> UuidList { get; private set; } = new List<ulong>();
 
         public Monster() { Name = "Empty"; Health = 0; CritChance = 0; Rank = 0; MoveList = new List<string>(); MaxHealth = 0; }
         public Monster(string name, int maxHealth, int rank, int critChance, DiscordGuild discordGuild)
@@ -45,7 +45,7 @@ namespace MonsterHunterBot
         public void Attack()
         {
             //choose a random user id from the targets list to attack
-            string uuid = UuidList[new Random().Next(0, Targets.Count)];
+            ulong uuid = UuidList[new Random().Next(0, Targets.Count)];
 
             Hunter attackTarget = Targets[uuid];
 
@@ -59,7 +59,7 @@ namespace MonsterHunterBot
             int targetsOldLength = Targets.Count;
 
             //Finds the uuid of the hunter to add them to the target pool
-            string uuid = ctx.Member.GetHashCode().ToString();
+            ulong uuid = ctx.Member.Id;
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
 
             //Adds the person who hit the monster to the target pool

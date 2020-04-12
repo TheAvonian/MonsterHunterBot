@@ -17,9 +17,11 @@ namespace MonsterHunterBot
     public struct ConfigHunterJson
     {
         [JsonProperty("Uuid")]
-        public string Uuid { get; set; }
+        public ulong Uuid { get; set; }
         [JsonProperty("Hunter")]
         public Hunter Hunter { get; set; }
+        [JsonProperty("RoleId")]
+        public ulong RoleId { get; set; }
     }
 
     public struct ConfigMonsterJson
