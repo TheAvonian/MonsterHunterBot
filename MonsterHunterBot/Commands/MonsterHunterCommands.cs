@@ -294,10 +294,12 @@ namespace MonsterHunterBot.Commands
                 ThumbnailUrl = "https://cdn.pixabay.com/photo/2017/05/03/15/26/sword-2281334__180.png"
             };
 
-            for(int i = 1; i < hunter.CurrentWeapon.MoveList.Count; i++)
+            for(int i = 0; i < hunter.CurrentWeapon.MoveSet.Count; i++)
             {
-                AttackEmbed.AddField("**" + i + ":**", hunter.CurrentWeapon.MoveSet[i].toString());
+                AttackEmbed.AddField("**" + (i + 1) + ":**", hunter.CurrentWeapon.MoveSet[i].toString());
             }
+
+            await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
             
         }
 

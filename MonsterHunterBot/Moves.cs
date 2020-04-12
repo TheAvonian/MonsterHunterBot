@@ -32,19 +32,20 @@ namespace MonsterHunterBot
 
         public string toString()
         {
-            string cooldownTime;
+            string cooldownTime = "";
             int minutes = Cooldown / 60;
             if (minutes < 10)
                 cooldownTime += "0" + minutes;
             else
                 cooldownTime += minutes;
             int seconds = Cooldown % 60;
+            cooldownTime += ":";
             if (seconds < 10)
                 cooldownTime += "0" + seconds;
             else
                 cooldownTime += seconds;
 
-            return "Name: " + Name + "\nDescription: " + Description + "\nDamage: " + DamageMin + "-" + DamageMax + "\nCooldown :" + cooldownTime;
+            return "**Name: ***" + Name + "*    **Damage: **" + DamageMin + "-" + DamageMax + "    **Cooldown: **" + cooldownTime + "\n**Description: **" + Description;
         }
     }
 }
