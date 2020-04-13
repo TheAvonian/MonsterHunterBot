@@ -55,7 +55,7 @@ namespace MonsterHunterBot.Commands
                 Directory.CreateDirectory(".\\Servers\\" + ctx.Guild.Id + "\\Monsters");
 
                 Bot.ServerActiveMonster[ctx.Guild.Id] = new ConfigMonsterJson() { Monster = Monster.Empty };
-                UpdateMonsterJson(ctx);
+                UpdateMonster(ctx, false);
                 Bot.ServerHunterList[ctx.Guild.Id] = new List<ConfigHunterJson>();
 
                 await dedicateMessage.ModifyAsync("Done!");
@@ -89,7 +89,7 @@ namespace MonsterHunterBot.Commands
                 return;
             }
 
-            var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("00FF00"), false, false);
+            var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("1f8b4c"), false, false);
             // Adds new hunter to the hunters list
             var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id, Role =  playerRole };
             Bot.ServerHunterList[ctx.Guild.Id].Add(configHunter);
@@ -146,11 +146,16 @@ namespace MonsterHunterBot.Commands
 
         [Command("SpawnMonster")]
         public async Task SpawnMonster(CommandContext ctx)
-        { 
+        {
             //Checks that a monster isnt already active
+            if (Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health > 0)
+            {
+                await ctx.Channel.SendMessageAsync("A monster is already active! Stop it stupid devs. Yeah I know its you... This is a testing only command so who else could it be");
+                return;
+            }
 
-            Monster Jagras = new Monster("Jagras", 25, 1, 2, ctx.Guild);
-            await UpdateChannelAsync(ctx, Jagras);
+
+            Monster Jagras = new Monster("Jagras", 5, 1, 2, ctx.Guild);
 
             var MonsterEmbed = new DiscordEmbedBuilder
             {
@@ -162,11 +167,9 @@ namespace MonsterHunterBot.Commands
             await ctx.Channel.SendMessageAsync(embed:MonsterEmbed);
 
             Bot.ServerActiveMonster[ctx.Guild.Id] = new ConfigMonsterJson() { Monster = Jagras };
-            UpdateMonsterJson(ctx);
+            UpdateMonster(ctx, true);
 
-            // make sure to update the active monster in the serveractivemonster dictionary every 
-            //time health changes and then update json (just set health directly dont use variable for the monster
-            //wait until health drops to 0
+            await MonsterAttacks(ctx);
 
         }
 
@@ -212,9 +215,8 @@ namespace MonsterHunterBot.Commands
                     var reaction = await Interactivity.WaitForReactionAsync(
                         x => x.Message == HunterDisplay && x.User.Id == ctx.Member.Id &&
                         (x.Emoji == HelmetEmoji || x.Emoji == ChestplateEmoji || x.Emoji == BracersEmoji || x.Emoji == WaistEmoji
-                        || x.Emoji == GreavesEmoji || x.Emoji == SwordEmoji || x.Emoji == StatsEmoji),
-                        TimeSpan.FromSeconds(30)).ConfigureAwait(false);
-                    if (reaction.Result is null)
+                        || x.Emoji == GreavesEmoji || x.Emoji == SwordEmoji || x.Emoji == StatsEmoji)).ConfigureAwait(false);
+                    if (reaction.TimedOut)
                     {
                         await ctx.Channel.DeleteMessageAsync(HunterDisplay);
                         break;
@@ -306,37 +308,71 @@ namespace MonsterHunterBot.Commands
                 var AttackEmbed = new DiscordEmbedBuilder
                 {
                     Title = hunter.Name + "'s Attack Panel",
-                    Description = "React to select an ability/move to use!",
-                    ThumbnailUrl = "https://cdn.pixabay.com/photo/2017/05/03/15/26/sword-2281334__180.png"
+                    Description = "React to select an ability/move to use!"
+                };
+                AttackEmbed.WithFooter("00:00");
+                AttackEmbed.WithAuthor(ctx.User.Username, default, ctx.User.GetAvatarUrl(ImageFormat.Png));
+
+                List<DiscordEmoji> NumberEmojis = new List<DiscordEmoji>{
+                    DiscordEmoji.FromName(ctx.Client, ":zero:"),
+                    DiscordEmoji.FromName(ctx.Client, ":one:"),
+                    DiscordEmoji.FromName(ctx.Client, ":two:"),
+                    DiscordEmoji.FromName(ctx.Client, ":three:"),
+                    DiscordEmoji.FromName(ctx.Client, ":four:"),
+                    DiscordEmoji.FromName(ctx.Client, ":five:"),
+                    DiscordEmoji.FromName(ctx.Client, ":six:"),
+                    DiscordEmoji.FromName(ctx.Client, ":seven:"),
+                    DiscordEmoji.FromName(ctx.Client, ":eight:"),
+                    DiscordEmoji.FromName(ctx.Client, ":nine:")
                 };
 
-                var OneEmoji = DiscordEmoji.FromName(ctx.Client, ":one:");
-                var TwoEmoji = DiscordEmoji.FromName(ctx.Client, ":two:");
-                var ThreeEmoji = DiscordEmoji.FromName(ctx.Client, ":three:");
-                var FourEmoji = DiscordEmoji.FromName(ctx.Client, ":four:");
-                var FiveEmoji = DiscordEmoji.FromName(ctx.Client, ":five:");
-                var SixEmoji = DiscordEmoji.FromName(ctx.Client, ":six:");
-                var SevenEmoji = DiscordEmoji.FromName(ctx.Client, ":seven:");
-                var EightEmoji = DiscordEmoji.FromName(ctx.Client, ":Eight:");
-                var NineEmoji = DiscordEmoji.FromName(ctx.Client, ":Nine:");
-
+                //Adds a numbered field for each move available
                 for (int i = 0; i < hunter.CurrentWeapon.MoveSet.Count; i++)
                 {
                     AttackEmbed.AddField("**" + (i + 1) + ":**", hunter.CurrentWeapon.MoveSet[i].toString());
                 }
 
                 var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
-                await AttackDisplay.CreateReactionAsync(OneEmoji);
-                await AttackDisplay.CreateReactionAsync(TwoEmoji);
-                await AttackDisplay.CreateReactionAsync(ThreeEmoji);
-                await AttackDisplay.CreateReactionAsync(FourEmoji);
-                await AttackDisplay.CreateReactionAsync(FiveEmoji);
-                await AttackDisplay.CreateReactionAsync(SixEmoji);
-                await AttackDisplay.CreateReactionAsync(SevenEmoji);
-                await AttackDisplay.CreateReactionAsync(EightEmoji);
-                await AttackDisplay.CreateReactionAsync(NineEmoji);
+
+                //Adds an incrementing emoji for each move available
+                for(int i = 1; i <= hunter.CurrentWeapon.MoveSet.Count; i++)
+                    await AttackDisplay.CreateReactionAsync(NumberEmojis[i]);
 
 
+                while(true)
+                {
+                    var reaction = await Interactivity.WaitForReactionAsync(
+                        x => x.Message == AttackDisplay &&
+                        x.User.Id == ctx.Member.Id &&
+                        NumberEmojis.Contains(x.Emoji)).ConfigureAwait(false);
+
+                    if(reaction.TimedOut)
+                    {
+                        await AttackDisplay.DeleteAsync();
+                        break;
+                    }
+
+                    Moves move = hunter.CurrentWeapon.MoveSet[NumberEmojis.IndexOf(reaction.Result.Emoji) - 1];
+
+                    Bot.ServerActiveMonster[ctx.Guild.Id].Monster.TakeDamage(hunter.CurrentWeapon.Attack(move), ctx);
+                    UpdateMonster(ctx, true);
+
+                    if(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
+                    {
+                        await AttackDisplay.DeleteAsync();
+                        break;
+                    }
+
+                    for(int i = move.Cooldown; i >= 0; i--)
+                    {
+                        AttackEmbed = AttackEmbed.WithFooter(move.ClockFormatOfCooldown(i));
+                        await AttackDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(AttackEmbed));
+                        if(i > 0)
+                            await Task.Delay(TimeSpan.FromSeconds(1));
+                    }
+
+                    await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
+                }
             }
             else
                 await ctx.Channel.SendMessageAsync("Alright so let me get this straight, you're not a hunter... Yet you want to attack this monster?? " +
@@ -348,13 +384,28 @@ namespace MonsterHunterBot.Commands
 
         public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
         {
+            string OriginalChannelName = ctx.Channel.Name;
+            string OriginalChannelDescription = ctx.Channel.Topic;
+
             await ctx.Channel.ModifyAsync(a =>
             {
                 a.Name = Monster.Name;
                 a.Topic = Monster.Health + "/" + Monster.MaxHealth;
             });
+
             //When monster health drops to 0 revert channel back to normal
-            
+            bool monsterAlive = true;
+            while(monsterAlive)
+            {
+                if (Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
+                    monsterAlive = false;
+            }
+
+            await ctx.Channel.ModifyAsync(a =>
+            {
+                a.Name = OriginalChannelName;
+                a.Topic = OriginalChannelDescription;
+            });
         }
 
         public async Task UpdateDamageDisplay(Hunter hunter, CommandContext ctx)
@@ -401,9 +452,10 @@ namespace MonsterHunterBot.Commands
             return false;
         }
 
-        public void UpdateMonsterJson(CommandContext ctx)
+        public void UpdateMonster(CommandContext ctx, bool updateChannel = true)
         {
             File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Monsters\\ActiveMonster.json", JsonConvert.SerializeObject(Bot.ServerActiveMonster[ctx.Guild.Id], Formatting.Indented));
+            if (updateChannel) { UpdateChannelAsync(ctx, Bot.ServerActiveMonster[ctx.Guild.Id].Monster).ConfigureAwait(false); }
         }
 
         public void UpdateHunterJson(CommandContext ctx)
@@ -421,6 +473,16 @@ namespace MonsterHunterBot.Commands
         {
             var interactivity = ctx.Client.GetInteractivity();
             return (await interactivity.WaitForMessageAsync(u => u.Channel == ctx.Channel && (u.Author == ctx.User || u.Author == ctx.Member))).Result.Content;
+        }
+
+        public async Task MonsterAttacks(CommandContext ctx)
+        {
+            while (Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health > 0)
+            {
+                Moves moveused = Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Attack();
+
+                await Task.Delay(TimeSpan.FromSeconds(moveused.Cooldown));
+            }
         }
 
     }

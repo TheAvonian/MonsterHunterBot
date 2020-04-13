@@ -75,7 +75,7 @@ namespace MonsterHunterBot
 
             Client.UseInteractivity(new InteractivityConfiguration
             {
-                Timeout = TimeSpan.FromMinutes(2)
+                Timeout = TimeSpan.FromSeconds(45)
             });
 
             var commandsConfig = new CommandsNextConfiguration

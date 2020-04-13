@@ -15,13 +15,13 @@ namespace MonsterHunterBot
         //Represents the chance for a monster to get critted on
         public int CritChance { get; private set; }
         public int Rank { get; private set; }
-        public List<string> MoveList { get; private set; } //TODO make a "Moves" class and change this to a list of moves
+        public List<Moves> MoveList { get; private set; } = new List<Moves>(); //TODO make a "Moves" class and change this to a list of moves
         public int MaxHealth { get; }
         //The Hunters that the Monster would want to attack
         public Dictionary<ulong, Hunter> Targets { get; private set; } = new Dictionary<ulong, Hunter>();
         public List<ulong> UuidList { get; private set; } = new List<ulong>();
 
-        public Monster() { Name = "Empty"; Health = 0; CritChance = 0; Rank = 0; MoveList = new List<string>(); MaxHealth = 0; }
+        public Monster() { Name = "Empty"; Health = 0; CritChance = 0; Rank = 0; MaxHealth = 0; }
         public Monster(string name, int maxHealth, int rank, int critChance, DiscordGuild discordGuild)
         {
             Name = name;
@@ -31,25 +31,37 @@ namespace MonsterHunterBot
             CritChance = critChance;
 
             int numOfHunters = Bot.ServerHunterList[discordGuild.Id].Count;
-            if(Bot.ServerHunterList.Count != 0)
+            if(numOfHunters != 0)
             {
                 //Picks a random hunter from the server's hunter list and adds them to the targets array
                 ConfigHunterJson primaryTarget = Bot.ServerHunterList[discordGuild.Id][new Random().Next(0, numOfHunters)];
                 Targets.Add(primaryTarget.Uuid, primaryTarget.Hunter);
                 UuidList.Add(primaryTarget.Uuid);
             }
+
+
+            //TODO prep lists of moves per monster rank and pull them from Json files instead of this .add bs
+            if(rank == 1)
+            {
+
+                MoveList.Add(new Moves("Slash", 3, 1, "The " + Name + " reaches out with its claws and drags them through your chest!", 2));
+                MoveList.Add(new Moves("Bite", 5, 2, "The " + Name + " jumps at you and its teeth pierce your armor!", 3));
+            }
             
         }
 
-
-        public void Attack()
+        //Attacks a random target with a random move and returns the move it used
+        public Moves Attack()
         {
             //choose a random user id from the targets list to attack
             ulong uuid = UuidList[new Random().Next(0, Targets.Count)];
-
             Hunter attackTarget = Targets[uuid];
 
-            attackTarget.TakeDamage(new Random().Next(1, 3));
+            //Chooses a random move to use on the target
+            Moves move = MoveList[new Random().Next(0, MoveList.Count - 1)];
+
+            attackTarget.TakeDamage(move.GenerateDamage());
+            return move;
         }
 
         //Edits the monster's health the correct amount and returns a true if it got hit and false if it dodged
