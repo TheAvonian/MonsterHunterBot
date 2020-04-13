@@ -433,7 +433,7 @@ namespace MonsterHunterBot.Commands
             string hexRoleColor =
                 healthDub >= .5 ? hexRed + "FF00" :
                 healthDub <= .5 ? "FF" + hexGreen + "00" :
-                "FFFF00";
+                h == 0 ? "000001" : "FFFF00";
             await hunterJson.Role.ModifyAsync(r => r.Color = new DiscordColor(hexRoleColor));
         }
 
