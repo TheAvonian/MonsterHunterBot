@@ -85,6 +85,7 @@ namespace MonsterHunterBot.Commands
             var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("00FF00"), false, false);
             // Adds new hunter to the hunters list
             var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id, Role =  playerRole };
+            configHunter.Hunter.GuildCard.Path = ".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + ctx.Member.Id + ".jpg";
             Bot.ServerHunterList[ctx.Guild.Id].Add(configHunter);
 
             UpdateHunterJson(ctx);
@@ -376,6 +377,17 @@ namespace MonsterHunterBot.Commands
             
         }
 
+        [Command("GuildCard"), Description("Shows the Hunter's guild card.")]
+        public async Task GuildCard(CommandContext ctx)
+        {
+            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == ctx.Member.Id).Hunter;
+            GuildCard guildCard = hunter.GuildCard;
+            Color textC = guildCard.TextColor;
+            Image background = guildCard.Background;
+
+            await ctx.Channel.SendFileAsync(".\\Images\\StartingBackground.jpg");
+        }
+
         public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
         {
             string OriginalChannelName = ctx.Channel.Name;
@@ -416,7 +428,7 @@ namespace MonsterHunterBot.Commands
             string hexRoleColor =
                 healthDub >= .5 ? hexRed + "FF00" :
                 healthDub <= .5 ? "FF" + hexGreen + "00" :
-                "FFFF00";
+                h == 0 ? "000001" : "FFFF00";
             await hunterJson.Role.ModifyAsync(r => r.Color = new DiscordColor(hexRoleColor));
         }
 
