@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -89,7 +90,7 @@ namespace MonsterHunterBot.Commands
                 return;
             }
 
-            var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("1f8b4c"), false, false);
+            var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("00FF00"), false, false);
             // Adds new hunter to the hunters list
             var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id, Role =  playerRole };
             Bot.ServerHunterList[ctx.Guild.Id].Add(configHunter);
@@ -97,7 +98,7 @@ namespace MonsterHunterBot.Commands
             UpdateHunterJson(ctx);
             await ctx.Member.GrantRoleAsync(playerRole);
             await ctx.Channel.SendMessageAsync("Alright, " + hName + " it is!").ConfigureAwait(false);
-            //await UpdateDamageDisplay(configHunter.Hunter, ctx);
+            await UpdateDamageDisplay(ctx);
         }
 
         [Command("DeleteMyHunter"), Description("Deletes the users hunter from the database")]
@@ -132,16 +133,14 @@ namespace MonsterHunterBot.Commands
             ulong uuid = ctx.Member.Id;
             Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter.TakeDamage(damage);
             
-            //await UpdateDamageDisplay(Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter, ctx);
+            await UpdateDamageDisplay(ctx);
             UpdateHunterJson(ctx);
         }
 
         [Command("DamageDisplay")]
         public async Task DamageDisplay(CommandContext ctx)
         {
-            ulong uuid = ctx.Member.Id;
-            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
-            await UpdateDamageDisplay(hunter, ctx);
+            await UpdateDamageDisplay(ctx);
         }
 
         [Command("SpawnMonster")]
@@ -408,37 +407,22 @@ namespace MonsterHunterBot.Commands
             });
         }
 
-        public async Task UpdateDamageDisplay(Hunter hunter, CommandContext ctx)
+        public async Task UpdateDamageDisplay(CommandContext ctx)
         {
-            var fullHealthRole = ctx.Guild.GetRole(698235037069606995);
-            var hurtRole = ctx.Guild.GetRole(698235085857620070);
-            var damagedRole = ctx.Guild.GetRole(698235116354273333);
-            var nearDeathRole = ctx.Guild.GetRole(698235220373143602);
-            var deadRole = ctx.Guild.GetRole(698273743239118919);
-            int newRoleIndex;
-
-            if (hunter.Health == hunter.MaxHealth)
-            { await ctx.Member.GrantRoleAsync(fullHealthRole); newRoleIndex = 1; }
-            else if (hunter.Health > hunter.MaxHealth / 2)
-            { await ctx.Member.GrantRoleAsync(hurtRole); newRoleIndex = 2; }
-            else if (hunter.Health > hunter.MaxHealth / 10)
-            { await ctx.Member.GrantRoleAsync(damagedRole); newRoleIndex = 3; }
-            else if (hunter.Health > 0)
-            { await ctx.Member.GrantRoleAsync(nearDeathRole); newRoleIndex = 4; }
-            else
-            { await ctx.Member.GrantRoleAsync(deadRole); newRoleIndex = 5; }
-
-            if (newRoleIndex != 1)
-                await ctx.Member.RevokeRoleAsync(fullHealthRole);
-            if (newRoleIndex != 2)
-                await ctx.Member.RevokeRoleAsync(hurtRole);
-            if (newRoleIndex != 3)
-                await ctx.Member.RevokeRoleAsync(damagedRole);
-            if (newRoleIndex != 4)
-                await ctx.Member.RevokeRoleAsync(nearDeathRole);
-            if (newRoleIndex != 5)
-                await ctx.Member.RevokeRoleAsync(deadRole);
-
+            ulong uuid = ctx.Member.Id;
+            ConfigHunterJson hunterJson = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid);
+            int h = hunterJson.Hunter.Health;
+            int maxH = hunterJson.Hunter.MaxHealth;
+            double healthDub = (double)h / maxH;
+            int green = (int)Math.Round(healthDub * 2 * 255);
+            int red = (int)Math.Round(255 - (healthDub * 2 * 255 - 255));
+            string hexGreen = green.ToString("X2");
+            string hexRed = red.ToString("X2");
+            string hexRoleColor =
+                healthDub >= .5 ? hexRed + "FF00" :
+                healthDub <= .5 ? "FF" + hexGreen + "00" :
+                "FFFF00";
+            await hunterJson.Role.ModifyAsync(r => r.Color = new DiscordColor(hexRoleColor));
         }
 
         public bool NoHunter(CommandContext ctx)
