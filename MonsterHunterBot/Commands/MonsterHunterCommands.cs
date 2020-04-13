@@ -3,20 +3,12 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Net.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace MonsterHunterBot.Commands
 {
@@ -313,7 +305,6 @@ namespace MonsterHunterBot.Commands
                 AttackEmbed.WithAuthor(ctx.User.Username, default, ctx.User.GetAvatarUrl(ImageFormat.Png));
 
                 List<DiscordEmoji> NumberEmojis = new List<DiscordEmoji>{
-                    DiscordEmoji.FromName(ctx.Client, ":zero:"),
                     DiscordEmoji.FromName(ctx.Client, ":one:"),
                     DiscordEmoji.FromName(ctx.Client, ":two:"),
                     DiscordEmoji.FromName(ctx.Client, ":three:"),
@@ -333,9 +324,13 @@ namespace MonsterHunterBot.Commands
 
                 var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
 
+                List<DiscordEmoji> UsedEmojis = new List<DiscordEmoji>();
                 //Adds an incrementing emoji for each move available
-                for(int i = 1; i <= hunter.CurrentWeapon.MoveSet.Count; i++)
+                for (int i = 0; i <= hunter.CurrentWeapon.MoveSet.Count - 1; i++)
+                {
                     await AttackDisplay.CreateReactionAsync(NumberEmojis[i]);
+                    UsedEmojis.Add(NumberEmojis[i]);
+                }
 
 
                 while(true)
@@ -343,7 +338,7 @@ namespace MonsterHunterBot.Commands
                     var reaction = await Interactivity.WaitForReactionAsync(
                         x => x.Message == AttackDisplay &&
                         x.User.Id == ctx.Member.Id &&
-                        NumberEmojis.Contains(x.Emoji)).ConfigureAwait(false);
+                        UsedEmojis.Contains(x.Emoji)).ConfigureAwait(false);
 
                     if(reaction.TimedOut)
                     {
@@ -351,7 +346,7 @@ namespace MonsterHunterBot.Commands
                         break;
                     }
 
-                    Moves move = hunter.CurrentWeapon.MoveSet[NumberEmojis.IndexOf(reaction.Result.Emoji) - 1];
+                    Moves move = hunter.CurrentWeapon.MoveSet[NumberEmojis.IndexOf(reaction.Result.Emoji)];
 
                     Bot.ServerActiveMonster[ctx.Guild.Id].Monster.TakeDamage(hunter.CurrentWeapon.Attack(move), ctx);
                     UpdateMonster(ctx, true);
@@ -375,9 +370,9 @@ namespace MonsterHunterBot.Commands
             }
             else
                 await ctx.Channel.SendMessageAsync("Alright so let me get this straight, you're not a hunter... Yet you want to attack this monster?? " +
-                    "Doesn't seem like a smart idea. Let's just 'break;' quick");
-            //Haha what did you really come to the code to see if it actually used "break;" to get out of the function? No. I'm an else kinda guy but the joke wouldn't have worked
-            //unless I pretended I was using break; so just let this one slide, okay?
+                    "Doesn't seem like a smart idea. Let's just 'return;' quick");
+            //Haha what did you really come to the code to see if it actually used "return;" to get out of the function? No. I'm an else kinda guy but the joke wouldn't have worked
+            //unless I pretended I was using return; so just let this one slide, okay?
             
         }
 
@@ -394,7 +389,7 @@ namespace MonsterHunterBot.Commands
 
             //When monster health drops to 0 revert channel back to normal
             bool monsterAlive = true;
-            while(monsterAlive)
+            while (monsterAlive)
             {
                 if (Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
                     monsterAlive = false;
@@ -439,7 +434,13 @@ namespace MonsterHunterBot.Commands
         public void UpdateMonster(CommandContext ctx, bool updateChannel = true)
         {
             File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Monsters\\ActiveMonster.json", JsonConvert.SerializeObject(Bot.ServerActiveMonster[ctx.Guild.Id], Formatting.Indented));
-            if (updateChannel) { UpdateChannelAsync(ctx, Bot.ServerActiveMonster[ctx.Guild.Id].Monster).ConfigureAwait(false); }
+            Monster monster = Bot.ServerActiveMonster[ctx.Guild.Id].Monster;
+            
+            ctx.Channel.ModifyAsync(a =>
+            {
+                a.Name = monster.Name;
+                a.Topic = monster.Health + "/" + monster.MaxHealth;
+            });
         }
 
         public void UpdateHunterJson(CommandContext ctx)
