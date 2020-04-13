@@ -21,9 +21,11 @@
     <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00683" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00683" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00683" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.0-preview.2.20160.6" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="bin\Debug\netcoreapp3.1\Images\" />
     <Folder Include="bin\Debug\netcoreapp3.1\Servers\" />
     <Folder Include="WeaponTypes\" />
   </ItemGroup>

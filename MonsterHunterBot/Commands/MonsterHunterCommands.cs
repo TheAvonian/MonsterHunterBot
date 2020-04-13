@@ -93,6 +93,7 @@ namespace MonsterHunterBot.Commands
             var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("00FF00"), false, false);
             // Adds new hunter to the hunters list
             var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id, Role =  playerRole };
+            configHunter.Hunter.GuildCard.Path = ".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + ctx.Member.Id + ".jpg";
             Bot.ServerHunterList[ctx.Guild.Id].Add(configHunter);
 
             UpdateHunterJson(ctx);
@@ -379,6 +380,17 @@ namespace MonsterHunterBot.Commands
             //Haha what did you really come to the code to see if it actually used "break;" to get out of the function? No. I'm an else kinda guy but the joke wouldn't have worked
             //unless I pretended I was using break; so just let this one slide, okay?
             
+        }
+
+        [Command("GuildCard"), Description("Shows the Hunter's guild card.")]
+        public async Task GuildCard(CommandContext ctx)
+        {
+            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == ctx.Member.Id).Hunter;
+            GuildCard guildCard = hunter.GuildCard;
+            Color textC = guildCard.TextColor;
+            Image background = guildCard.Background;
+
+            await ctx.Channel.SendFileAsync(".\\Images\\StartingBackground.jpg");
         }
 
         public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
