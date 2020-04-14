@@ -405,6 +405,7 @@ namespace MonsterHunterBot.Commands
         [Command("GuildCard"), Description("Shows the Hunter's guild card.")]
         public async Task GuildCard(CommandContext ctx)
         {
+            if (NoHunter(ctx)) return;
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == ctx.Member.Id).Hunter;
             GuildCard guildCard = hunter.GuildCard;
             Color textC = guildCard.TextColor;
