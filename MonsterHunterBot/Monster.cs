@@ -60,7 +60,7 @@ namespace MonsterHunterBot
             //Chooses a random move to use on the target
             Moves move = MoveList[new Random().Next(0, MoveList.Count - 1)];
 
-            attackTarget.TakeDamage(move.GenerateDamage());
+            attackTarget.TakeDamage(move);
             return move;
         }
 

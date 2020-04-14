@@ -125,16 +125,10 @@ namespace MonsterHunterBot.Commands
         {
             if (NoHunter(ctx)) return;
             ulong uuid = ctx.Member.Id;
-            Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter.TakeDamage(damage);
+            Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter.TakeDamage(new Moves("Self harm", damage, damage, "The hunter stabbing themself", 0));
             
             await UpdateDamageDisplay(ctx);
             UpdateHunterJson(ctx);
-        }
-
-        [Command("DamageDisplay")]
-        public async Task DamageDisplay(CommandContext ctx)
-        {
-            await UpdateDamageDisplay(ctx);
         }
 
         [Command("SpawnMonster")]
@@ -160,7 +154,8 @@ namespace MonsterHunterBot.Commands
             await ctx.Channel.SendMessageAsync(embed:MonsterEmbed);
 
             Bot.ServerActiveMonster[ctx.Guild.Id] = new ConfigMonsterJson() { Monster = Jagras };
-            UpdateMonster(ctx, true);
+            UpdateChannelAsync(ctx, Jagras);
+            UpdateMonster(ctx);
 
             await MonsterAttacks(ctx);
 
@@ -293,90 +288,119 @@ namespace MonsterHunterBot.Commands
         {
             ulong uuid = ctx.Member.Id;
 
-            if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
+            await ctx.Channel.DeleteMessageAsync(ctx.Message);
+
+            if(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
             {
-                Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
-                var Interactivity = ctx.Client.GetInteractivity();
+                await ctx.Channel.SendMessageAsync("Attack what? There's no monster in here!");
+                return;
+            }
+            if (!Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
+            {
+                await ctx.Channel.SendMessageAsync("Alright so let me get this straight, you're not a hunter... Yet you want to attack this monster?? " +
+                    "Doesn't seem like a smart idea. Let's just 'return;' quick");
+                return;
+            }
 
-                var AttackEmbed = new DiscordEmbedBuilder
+            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
+            var Interactivity = ctx.Client.GetInteractivity();
+
+            var AttackEmbed = new DiscordEmbedBuilder
+            {
+                Title = hunter.Name + "'s Attack Panel",
+                Description = "React to select an ability/move to use!"
+            };
+            AttackEmbed.WithFooter("00:00");
+            AttackEmbed.WithAuthor(ctx.User.Username, default, ctx.User.GetAvatarUrl(ImageFormat.Png));
+
+            List<DiscordEmoji> NumberEmojis = new List<DiscordEmoji>{
+                DiscordEmoji.FromName(ctx.Client, ":one:"),
+                DiscordEmoji.FromName(ctx.Client, ":two:"),
+                DiscordEmoji.FromName(ctx.Client, ":three:"),
+                DiscordEmoji.FromName(ctx.Client, ":four:"),
+                DiscordEmoji.FromName(ctx.Client, ":five:"),
+                DiscordEmoji.FromName(ctx.Client, ":six:"),
+                DiscordEmoji.FromName(ctx.Client, ":seven:"),
+                DiscordEmoji.FromName(ctx.Client, ":eight:"),
+                DiscordEmoji.FromName(ctx.Client, ":nine:")
+            };
+
+            var AttackEmbedWithMonsterAttack = new DiscordEmbedBuilder
+            {
+                Title = AttackEmbed.Title,
+                Description = AttackEmbed.Description,
+                Footer = AttackEmbed.Footer,
+                Author = AttackEmbed.Author
+            };
+
+            AttackEmbedWithMonsterAttack.AddField("\u200b", "\u200b");
+
+            //Adds a numbered field for each move available
+            for (int i = 0; i < hunter.CurrentWeapon.MoveSet.Count; i++)
+            {
+                string fieldName = "**" + (i + 1) + ":**";
+                string moveInfo = hunter.CurrentWeapon.MoveSet[i].toString();
+                AttackEmbed.AddField(fieldName, moveInfo);
+                AttackEmbedWithMonsterAttack.AddField(fieldName, moveInfo);
+            }
+
+            var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
+
+            List<DiscordEmoji> UsedEmojis = new List<DiscordEmoji>();
+            //Adds an incrementing emoji for each move available
+            for (int i = 0; i <= hunter.CurrentWeapon.MoveSet.Count - 1; i++)
+            {
+                await AttackDisplay.CreateReactionAsync(NumberEmojis[i]);
+                UsedEmojis.Add(NumberEmojis[i]);
+            }
+
+
+            while(true)
+            {
+                var reaction = await Interactivity.WaitForReactionAsync(
+                    x => x.Message == AttackDisplay &&
+                    x.User.Id == ctx.Member.Id &&
+                    UsedEmojis.Contains(x.Emoji)).ConfigureAwait(false);
+
+                if(reaction.TimedOut)
                 {
-                    Title = hunter.Name + "'s Attack Panel",
-                    Description = "React to select an ability/move to use!"
-                };
-                AttackEmbed.WithFooter("00:00");
-                AttackEmbed.WithAuthor(ctx.User.Username, default, ctx.User.GetAvatarUrl(ImageFormat.Png));
-
-                List<DiscordEmoji> NumberEmojis = new List<DiscordEmoji>{
-                    DiscordEmoji.FromName(ctx.Client, ":one:"),
-                    DiscordEmoji.FromName(ctx.Client, ":two:"),
-                    DiscordEmoji.FromName(ctx.Client, ":three:"),
-                    DiscordEmoji.FromName(ctx.Client, ":four:"),
-                    DiscordEmoji.FromName(ctx.Client, ":five:"),
-                    DiscordEmoji.FromName(ctx.Client, ":six:"),
-                    DiscordEmoji.FromName(ctx.Client, ":seven:"),
-                    DiscordEmoji.FromName(ctx.Client, ":eight:"),
-                    DiscordEmoji.FromName(ctx.Client, ":nine:")
-                };
-
-                //Adds a numbered field for each move available
-                for (int i = 0; i < hunter.CurrentWeapon.MoveSet.Count; i++)
-                {
-                    AttackEmbed.AddField("**" + (i + 1) + ":**", hunter.CurrentWeapon.MoveSet[i].toString());
+                    await AttackDisplay.DeleteAsync();
+                    break;
                 }
 
-                var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
+                Moves move = hunter.CurrentWeapon.MoveSet[NumberEmojis.IndexOf(reaction.Result.Emoji)];
 
-                List<DiscordEmoji> UsedEmojis = new List<DiscordEmoji>();
-                //Adds an incrementing emoji for each move available
-                for (int i = 0; i <= hunter.CurrentWeapon.MoveSet.Count - 1; i++)
+                Bot.ServerActiveMonster[ctx.Guild.Id].Monster.TakeDamage(hunter.CurrentWeapon.Attack(move), ctx);
+                UpdateMonster(ctx);
+
+                if(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
                 {
-                    await AttackDisplay.CreateReactionAsync(NumberEmojis[i]);
-                    UsedEmojis.Add(NumberEmojis[i]);
+                    await AttackDisplay.DeleteAsync();
+                    break;
                 }
 
-
-                while(true)
+                for(int i = move.Cooldown; i >= 0; i--)
                 {
-                    var reaction = await Interactivity.WaitForReactionAsync(
-                        x => x.Message == AttackDisplay &&
-                        x.User.Id == ctx.Member.Id &&
-                        UsedEmojis.Contains(x.Emoji)).ConfigureAwait(false);
-
-                    if(reaction.TimedOut)
-                    {
-                        await AttackDisplay.DeleteAsync();
-                        break;
-                    }
-
-                    Moves move = hunter.CurrentWeapon.MoveSet[NumberEmojis.IndexOf(reaction.Result.Emoji)];
-
-                    Bot.ServerActiveMonster[ctx.Guild.Id].Monster.TakeDamage(hunter.CurrentWeapon.Attack(move), ctx);
-                    UpdateMonster(ctx, true);
-
-                    if(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
-                    {
-                        await AttackDisplay.DeleteAsync();
-                        break;
-                    }
-
-                    for(int i = move.Cooldown; i >= 0; i--)
+                    if(hunter.LastHitTaken is null)
                     {
                         AttackEmbed = AttackEmbed.WithFooter(move.ClockFormatOfCooldown(i));
                         await AttackDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(AttackEmbed));
-                        if(i > 0)
-                            await Task.Delay(TimeSpan.FromSeconds(1));
                     }
-
-                    await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
+                    else
+                    {
+                        AttackEmbedWithMonsterAttack.Fields[0].Name = hunter.LastHitTaken;
+                        AttackEmbedWithMonsterAttack.Fields[0].Value = hunter.LastDamageTaken;
+                        AttackEmbedWithMonsterAttack = AttackEmbedWithMonsterAttack.WithFooter(move.ClockFormatOfCooldown(i));
+                        await AttackDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(AttackEmbedWithMonsterAttack));
+                    }
+                    
+                    if(i > 0)
+                        await Task.Delay(TimeSpan.FromSeconds(1));
                 }
+
+                await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
             }
-            else
-                await ctx.Channel.SendMessageAsync("Alright so let me get this straight, you're not a hunter... Yet you want to attack this monster?? " +
-                    "Doesn't seem like a smart idea. Let's just 'return;' quick");
-            //Haha what did you really come to the code to see if it actually used "return;" to get out of the function? No. I'm an else kinda guy but the joke wouldn't have worked
-            //unless I pretended I was using return; so just let this one slide, okay?
-            
-        }
+        }     
 
         [Command("GuildCard"), Description("Shows the Hunter's guild card.")]
         public async Task GuildCard(CommandContext ctx)
@@ -444,16 +468,19 @@ namespace MonsterHunterBot.Commands
             return false;
         }
 
-        public void UpdateMonster(CommandContext ctx, bool updateChannel = true)
+        public void UpdateMonster(CommandContext ctx, bool andChannel = true)
         {
             File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Monsters\\ActiveMonster.json", JsonConvert.SerializeObject(Bot.ServerActiveMonster[ctx.Guild.Id], Formatting.Indented));
             Monster monster = Bot.ServerActiveMonster[ctx.Guild.Id].Monster;
-            
-            ctx.Channel.ModifyAsync(a =>
+
+            if (andChannel)
             {
-                a.Name = monster.Name;
-                a.Topic = monster.Health + "/" + monster.MaxHealth;
-            });
+                ctx.Channel.ModifyAsync(a =>
+                {
+                    a.Name = monster.Name;
+                    a.Topic = monster.Health + "/" + monster.MaxHealth;
+                });
+            }
         }
 
         public void UpdateHunterJson(CommandContext ctx)
@@ -478,8 +505,11 @@ namespace MonsterHunterBot.Commands
             while (Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health > 0)
             {
                 Moves moveused = Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Attack();
+                await UpdateDamageDisplay(ctx);
+                UpdateHunterJson(ctx);
 
                 await Task.Delay(TimeSpan.FromSeconds(moveused.Cooldown));
+                
             }
         }
 
