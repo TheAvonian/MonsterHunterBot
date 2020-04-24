@@ -383,7 +383,7 @@ namespace MonsterHunterBot.Commands
 
         }
 
-        public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
+        public async Task UpdateChannelAsync(CommandContext ctx)
         {
             string OriginalChannelName = ctx.Channel.Name;
             string OriginalChannelDescription = ctx.Channel.Topic;
