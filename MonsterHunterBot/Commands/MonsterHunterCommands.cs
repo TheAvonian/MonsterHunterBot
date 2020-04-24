@@ -167,8 +167,6 @@ namespace MonsterHunterBot.Commands
             ulong uuid = ctx.Member.Id;
             if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
             {
-
-
                 Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
                 var Interactivity = ctx.Client.GetInteractivity();
 
@@ -305,13 +303,7 @@ namespace MonsterHunterBot.Commands
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
             var Interactivity = ctx.Client.GetInteractivity();
 
-            var AttackEmbed = new DiscordEmbedBuilder
-            {
-                Title = hunter.Name + "'s Attack Panel",
-                Description = "React to select an ability/move to use!"
-            };
-            AttackEmbed.WithFooter("00:00");
-            AttackEmbed.WithAuthor(ctx.User.Username, default, ctx.User.GetAvatarUrl(ImageFormat.Png));
+            var AttackEmbed = new AttackEmbed(ctx);
 
             List<DiscordEmoji> NumberEmojis = new List<DiscordEmoji>{
                 DiscordEmoji.FromName(ctx.Client, ":one:"),
@@ -325,28 +317,10 @@ namespace MonsterHunterBot.Commands
                 DiscordEmoji.FromName(ctx.Client, ":nine:")
             };
 
-            var AttackEmbedWithMonsterAttack = new DiscordEmbedBuilder
-            {
-                Title = AttackEmbed.Title,
-                Description = AttackEmbed.Description,
-                Footer = AttackEmbed.Footer,
-                Author = AttackEmbed.Author
-            };
-
-            AttackEmbedWithMonsterAttack.AddField("\u200b", "\u200b");
-
-            //Adds a numbered field for each move available
-            for (int i = 0; i < hunter.CurrentWeapon.MoveSet.Count; i++)
-            {
-                string fieldName = "**" + (i + 1) + ":**";
-                string moveInfo = hunter.CurrentWeapon.MoveSet[i].toString();
-                AttackEmbed.AddField(fieldName, moveInfo);
-                AttackEmbedWithMonsterAttack.AddField(fieldName, moveInfo);
-            }
-
-            var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed);
+            var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed.Embed);
 
             List<DiscordEmoji> UsedEmojis = new List<DiscordEmoji>();
+
             //Adds an incrementing emoji for each move available
             for (int i = 0; i <= hunter.CurrentWeapon.MoveSet.Count - 1; i++)
             {
@@ -354,6 +328,7 @@ namespace MonsterHunterBot.Commands
                 UsedEmojis.Add(NumberEmojis[i]);
             }
 
+            AttackEmbed.UpdateSequence();
 
             while(true)
             {
@@ -379,25 +354,6 @@ namespace MonsterHunterBot.Commands
                     break;
                 }
 
-                for(int i = move.Cooldown; i >= 0; i--)
-                {
-                    if(hunter.LastHitTaken is null)
-                    {
-                        AttackEmbed = AttackEmbed.WithFooter(move.ClockFormatOfCooldown(i));
-                        await AttackDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(AttackEmbed));
-                    }
-                    else
-                    {
-                        AttackEmbedWithMonsterAttack.Fields[0].Name = hunter.LastHitTaken;
-                        AttackEmbedWithMonsterAttack.Fields[0].Value = hunter.LastDamageTaken;
-                        AttackEmbedWithMonsterAttack = AttackEmbedWithMonsterAttack.WithFooter(move.ClockFormatOfCooldown(i));
-                        await AttackDisplay.ModifyAsync(default, new Optional<DiscordEmbed>(AttackEmbedWithMonsterAttack));
-                    }
-                    
-                    if(i > 0)
-                        await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-
                 await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
             }
         }     
@@ -414,7 +370,20 @@ namespace MonsterHunterBot.Commands
             await ctx.Channel.SendFileAsync(".\\Images\\StartingBackground.jpg");
         }
 
-        public async Task UpdateChannelAsync(CommandContext ctx)
+        [Command("Shop"), Description("The shop menu for hunters to buy base weapons")]
+        public async Task Shop(CommandContext ctx)
+        {
+            ulong uuid = ctx.Member.Id;
+            if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
+            {
+                await ctx.Channel.SendMessageAsync("You cannot shop if you're not a Hunter!");
+                return;
+            }
+            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
+
+        }
+
+        public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
         {
             string OriginalChannelName = ctx.Channel.Name;
             string OriginalChannelDescription = ctx.Channel.Topic;
