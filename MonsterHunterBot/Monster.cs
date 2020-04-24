@@ -20,6 +20,8 @@ namespace MonsterHunterBot
         //The Hunters that the Monster would want to attack
         public Dictionary<ulong, Hunter> Targets { get; private set; } = new Dictionary<ulong, Hunter>();
         public List<ulong> UuidList { get; private set; } = new List<ulong>();
+        public string LastHit { get; private set; }
+        public int LastDamage { get; private set; }
 
         public Monster() { Name = "Empty"; Health = 0; CritChance = 0; Rank = 0; MaxHealth = 0; }
         public Monster(string name, int maxHealth, int rank, int critChance, DiscordGuild discordGuild)
