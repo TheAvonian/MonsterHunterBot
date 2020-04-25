@@ -47,7 +47,7 @@ namespace MonsterHunterBot
         {
             while (Bot.ServerActiveMonster[Ctx.Guild.Id].Monster.Health > 0)
             {
-                if (DamageDescription.StartsWith('*'))
+                if (!(DamageDescription is null) && DamageDescription.StartsWith('*'))
                     DamageDescription.Substring(1, DamageDescription.Length - 2);
                 else
                     DamageDescription = null;
@@ -67,7 +67,7 @@ namespace MonsterHunterBot
                     Embed.Fields[0].Name = DamageDescription;
                     Embed.Fields[0].Value = DamageTakenFromHit.ToString();
                 }
-                await Message.ModifyAsync(default, new Optional<DiscordEmbed>(Embed));
+                await Message.ModifyAsync(embed: new Optional<DiscordEmbed>(Embed));
                 await Task.Delay(500);
             }
         }

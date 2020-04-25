@@ -45,7 +45,6 @@ namespace MonsterHunterBot
             //TODO prep lists of moves per monster rank and pull them from Json files instead of this .add bs
             if(rank == 1)
             {
-
                 MoveList.Add(new Moves("Slash", 3, 1, "The " + Name + " reaches out with its claws and drags them through your chest!", 2));
                 MoveList.Add(new Moves("Bite", 5, 2, "The " + Name + " jumps at you and its teeth pierce your armor!", 3));
             }

@@ -19,8 +19,7 @@ namespace MonsterHunterBot
         public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", "Your wife beaters...", 1, 0, 0, "Fists");
         public GuildCard GuildCard { get; set; }
         public Palico Palico { get; set; }
-        public string LastHitTaken { get; set; }
-        public string LastDamageTaken { get; set; }
+        public AttackEmbed AttackEmbed { get; set; }
 
         public Hunter(string name)
         {
@@ -37,11 +36,12 @@ namespace MonsterHunterBot
         {
             int damage = moveUsed.GenerateDamage();
             Health -= damage;
-            LastHitTaken = moveUsed.Description;
-            LastDamageTaken = "The monster hit you for " + damage;
-            WatchDamageReport();
 
-
+            if (AttackEmbed != null)
+            {
+                AttackEmbed.DamageDescription = moveUsed.Description;
+                AttackEmbed.DamageTakenFromHit = damage;
+            }
             if (Health < 0)
                 Health = 0;
             
@@ -67,23 +67,6 @@ namespace MonsterHunterBot
             ArmorSlots[slotIndex] = newArmor;
 
             ArmorSlots[slotIndex].EquipArmor();
-        }
-
-        public async Task WatchDamageReport()
-        {
-            string originalHit = LastHitTaken;
-
-            int countdown = 2;
-            while (countdown > 0)
-            {
-                //if the hit taken has changed since called
-                if (originalHit != LastHitTaken)
-                    return;
-                countdown--;
-                await Task.Delay(TimeSpan.FromSeconds(1));
-            }
-
-            LastHitTaken = null;
         }
     }
 }

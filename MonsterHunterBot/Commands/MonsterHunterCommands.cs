@@ -105,7 +105,7 @@ namespace MonsterHunterBot.Commands
             if (userInput == "yes")
             {
                 DeleteHunterJson(ctx);
-                await Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Role.DeleteAsync();
+                //await Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Role.DeleteAsync();
                 Bot.ServerHunterList[ctx.Guild.Id].RemoveAll(u => u.Uuid == uuid);
                 await ctx.Channel.SendMessageAsync("Deletion successful.");
             }
@@ -288,11 +288,13 @@ namespace MonsterHunterBot.Commands
 
             await ctx.Channel.DeleteMessageAsync(ctx.Message);
 
+            //checks that theres a monster active in the server
             if(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
             {
                 await ctx.Channel.SendMessageAsync("Attack what? There's no monster in here!");
                 return;
             }
+            //checks that the user has a hunter
             if (!Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
             {
                 await ctx.Channel.SendMessageAsync("Alright so let me get this straight, you're not a hunter... Yet you want to attack this monster?? " +
@@ -303,8 +305,11 @@ namespace MonsterHunterBot.Commands
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
             var Interactivity = ctx.Client.GetInteractivity();
 
+            //creates the embed and stores it into the hunter
             var AttackEmbed = new AttackEmbed(ctx);
+            hunter.AttackEmbed = AttackEmbed;
 
+            //creates a list of the numbered emojis for selecting which move to use
             List<DiscordEmoji> NumberEmojis = new List<DiscordEmoji>{
                 DiscordEmoji.FromName(ctx.Client, ":one:"),
                 DiscordEmoji.FromName(ctx.Client, ":two:"),
@@ -317,7 +322,9 @@ namespace MonsterHunterBot.Commands
                 DiscordEmoji.FromName(ctx.Client, ":nine:")
             };
 
+            //sends the embed into the channel
             var AttackDisplay = await ctx.Channel.SendMessageAsync(embed: AttackEmbed.Embed);
+            AttackEmbed.SetMessage(AttackDisplay);
 
             List<DiscordEmoji> UsedEmojis = new List<DiscordEmoji>();
 
@@ -328,8 +335,10 @@ namespace MonsterHunterBot.Commands
                 UsedEmojis.Add(NumberEmojis[i]);
             }
 
+            //calls the update sequence to edit the embed every .5 seconds
             AttackEmbed.UpdateSequence();
 
+            //watches for reactions "forever"
             while(true)
             {
                 var reaction = await Interactivity.WaitForReactionAsync(
@@ -337,23 +346,21 @@ namespace MonsterHunterBot.Commands
                     x.User.Id == ctx.Member.Id &&
                     UsedEmojis.Contains(x.Emoji)).ConfigureAwait(false);
 
-                if(reaction.TimedOut)
+                //ends the loop and removes the embed if the monster dies or the hunter goes inactive
+                if(reaction.TimedOut || Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
                 {
                     await AttackDisplay.DeleteAsync();
+                    hunter.AttackEmbed = null;
                     break;
                 }
 
+                //uses the move the user selected
                 Moves move = hunter.CurrentWeapon.MoveSet[NumberEmojis.IndexOf(reaction.Result.Emoji)];
-
                 Bot.ServerActiveMonster[ctx.Guild.Id].Monster.TakeDamage(hunter.CurrentWeapon.Attack(move), ctx);
                 UpdateMonster(ctx);
 
-                if(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
-                {
-                    await AttackDisplay.DeleteAsync();
-                    break;
-                }
-
+                //removes the reaction after the cooldown ends
+                await Task.Delay(TimeSpan.FromSeconds(move.Cooldown));
                 await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
             }
         }     
@@ -373,6 +380,7 @@ namespace MonsterHunterBot.Commands
         [Command("Shop"), Description("The shop menu for hunters to buy base weapons")]
         public async Task Shop(CommandContext ctx)
         {
+            //Checks if the user has a hunter or not
             ulong uuid = ctx.Member.Id;
             if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
             {
@@ -380,7 +388,6 @@ namespace MonsterHunterBot.Commands
                 return;
             }
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
-
         }
 
         public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
@@ -424,7 +431,9 @@ namespace MonsterHunterBot.Commands
                 healthDub >= .5 ? hexRed + "FF00" :
                 healthDub <= .5 ? "FF" + hexGreen + "00" :
                 h == 0 ? "000001" : "FFFF00";
-            await hunterJson.Role.ModifyAsync(r => r.Color = new DiscordColor(hexRoleColor));
+
+            //WE NEED TO FIX THIS
+            //await hunterJson.Role.ModifyAsync(r => r.Color = new DiscordColor(hexRoleColor));
         }
 
         public bool NoHunter(CommandContext ctx)
@@ -472,14 +481,15 @@ namespace MonsterHunterBot.Commands
 
         public async Task MonsterAttacks(CommandContext ctx)
         {
+            //while the monster is alive
             while (Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health > 0)
             {
+                //Attack the hunter and update all the necessary values
                 Moves moveused = Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Attack();
-                await UpdateDamageDisplay(ctx);
+                UpdateDamageDisplay(ctx);
                 UpdateHunterJson(ctx);
 
-                await Task.Delay(TimeSpan.FromSeconds(moveused.Cooldown));
-                
+                await Task.Delay(TimeSpan.FromSeconds(moveused.Cooldown + new Random().Next(2, 6)));
             }
         }
 
