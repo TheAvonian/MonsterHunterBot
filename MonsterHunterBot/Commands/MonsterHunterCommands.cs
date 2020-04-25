@@ -154,7 +154,7 @@ namespace MonsterHunterBot.Commands
             await ctx.Channel.SendMessageAsync(embed:MonsterEmbed);
 
             Bot.ServerActiveMonster[ctx.Guild.Id] = new ConfigMonsterJson() { Monster = Jagras };
-            UpdateChannelAsync(ctx, Jagras);
+            UpdateChannelAsync(ctx);
             UpdateMonster(ctx);
 
             await MonsterAttacks(ctx);
@@ -394,11 +394,11 @@ namespace MonsterHunterBot.Commands
         {
             string OriginalChannelName = ctx.Channel.Name;
             string OriginalChannelDescription = ctx.Channel.Topic;
-
+            
             await ctx.Channel.ModifyAsync(a =>
             {
-                a.Name = Monster.Name;
-                a.Topic = Monster.Health + "/" + Monster.MaxHealth;
+                a.Name = Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Name;
+                a.Topic = Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health + "/" + Bot.ServerActiveMonster[ctx.Guild.Id].Monster.MaxHealth;
             });
 
             //When monster health drops to 0 revert channel back to normal
