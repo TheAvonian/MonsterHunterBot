@@ -159,6 +159,7 @@ namespace MonsterHunterBot.Commands
 
             await MonsterAttacks(ctx);
 
+            MonsterEmbed.Title = "The Jagras was slain!";
         }
 
         [Command("HunterDisplay")]
@@ -193,7 +194,6 @@ namespace MonsterHunterBot.Commands
                 await HunterDisplay.CreateReactionAsync(BracersEmoji);
                 await HunterDisplay.CreateReactionAsync(WaistEmoji);
                 await HunterDisplay.CreateReactionAsync(GreavesEmoji);
-                await Task.Delay(100);
 
                 //Sends the embed, adds reactions, and resends based on choice
                 while (true)
@@ -344,7 +344,7 @@ namespace MonsterHunterBot.Commands
                 var reaction = await Interactivity.WaitForReactionAsync(
                     x => x.Message == AttackDisplay &&
                     x.User.Id == ctx.Member.Id &&
-                    UsedEmojis.Contains(x.Emoji)).ConfigureAwait(false);
+                    UsedEmojis.Contains(x.Emoji));
 
                 //ends the loop and removes the embed if the monster dies or the hunter goes inactive
                 if(reaction.TimedOut || Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health == 0)
@@ -357,9 +357,11 @@ namespace MonsterHunterBot.Commands
                 //uses the move the user selected
                 Moves move = hunter.CurrentWeapon.MoveSet[NumberEmojis.IndexOf(reaction.Result.Emoji)];
                 Bot.ServerActiveMonster[ctx.Guild.Id].Monster.TakeDamage(hunter.CurrentWeapon.Attack(move), ctx);
-                UpdateMonster(ctx);
+                if(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health > 0)
+                    UpdateMonster(ctx, true);
 
                 //removes the reaction after the cooldown ends
+                AttackEmbed.TimeLeftOnCooldown = move.Cooldown;
                 await Task.Delay(TimeSpan.FromSeconds(move.Cooldown));
                 await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
             }
@@ -390,7 +392,7 @@ namespace MonsterHunterBot.Commands
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
         }
 
-        public async Task UpdateChannelAsync(CommandContext ctx, Monster Monster)
+        public async Task UpdateChannelAsync(CommandContext ctx)
         {
             string OriginalChannelName = ctx.Channel.Name;
             string OriginalChannelDescription = ctx.Channel.Topic;
@@ -449,7 +451,8 @@ namespace MonsterHunterBot.Commands
 
         public void UpdateMonster(CommandContext ctx, bool andChannel = true)
         {
-            File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Monsters\\ActiveMonster.json", JsonConvert.SerializeObject(Bot.ServerActiveMonster[ctx.Guild.Id], Formatting.Indented));
+            Console.WriteLine(Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Health);
+            //File.WriteAllText(".\\Servers\\" + ctx.Guild.Id + "\\Monsters\\ActiveMonster.json", JsonConvert.SerializeObject(Bot.ServerActiveMonster[ctx.Guild.Id], Formatting.Indented));
             Monster monster = Bot.ServerActiveMonster[ctx.Guild.Id].Monster;
 
             if (andChannel)
@@ -486,12 +489,11 @@ namespace MonsterHunterBot.Commands
             {
                 //Attack the hunter and update all the necessary values
                 Moves moveused = Bot.ServerActiveMonster[ctx.Guild.Id].Monster.Attack();
-                UpdateDamageDisplay(ctx);
-                UpdateHunterJson(ctx);
+                //UpdateDamageDisplay(ctx);
+                //UpdateHunterJson(ctx);
 
                 await Task.Delay(TimeSpan.FromSeconds(moveused.Cooldown + new Random().Next(2, 6)));
             }
         }
-
     }
 }

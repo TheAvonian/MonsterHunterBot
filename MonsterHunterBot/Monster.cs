@@ -59,7 +59,7 @@ namespace MonsterHunterBot
             Hunter attackTarget = Targets[uuid];
 
             //Chooses a random move to use on the target
-            Moves move = MoveList[new Random().Next(0, MoveList.Count - 1)];
+            Moves move = MoveList[new Random().Next(0, MoveList.Count)];
 
             attackTarget.TakeDamage(move);
             return move;

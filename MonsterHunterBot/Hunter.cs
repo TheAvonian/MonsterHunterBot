@@ -39,7 +39,7 @@ namespace MonsterHunterBot
 
             if (AttackEmbed != null)
             {
-                AttackEmbed.DamageDescription = moveUsed.Description;
+                AttackEmbed.DamageDescription = "**" + moveUsed.Description + "**";
                 AttackEmbed.DamageTakenFromHit = damage;
             }
             if (Health < 0)
