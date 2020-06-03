@@ -16,7 +16,7 @@ namespace MonsterHunterBot
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
         public Armor[] ArmorSlots { get; private set; } = { new Armor(), new Armor(), new Armor(), new Armor(), new Armor() };
-        public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", "Your wife beaters...", 1, 0, 0, "Fists");
+        public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", "Your beaters...", 1, 0, 0, "Fists");
         public GuildCard GuildCard { get; set; }
         public Palico Palico { get; set; }
         public string LastHitTaken { get; set; }
@@ -30,6 +30,7 @@ namespace MonsterHunterBot
             Health = MaxHealth;
 
             GuildCard = new GuildCard();
+            
         }
 
         //Reduces the health of the player and updates their damage display

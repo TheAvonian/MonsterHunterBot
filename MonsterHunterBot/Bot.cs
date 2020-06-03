@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SqlClient;
 
 namespace MonsterHunterBot
 {
@@ -21,6 +22,8 @@ namespace MonsterHunterBot
         public static Dictionary<ulong, List<ConfigHunterJson>> ServerHunterList { get; set; } = new Dictionary<ulong, List<ConfigHunterJson>>();
         public static Dictionary<ulong, ConfigMonsterJson> ServerActiveMonster { get; set; } = new Dictionary<ulong, ConfigMonsterJson>();
 
+        public static SqlConnection DatabaseConnection { get; } = new SqlConnection(@"Data Source = (LocalDB)\MSSQLLocalDB;Initial Catalog = MHBotDatabase;Integrated Security = True");
+        public static SqlCommand Database { get; set; }
         public async Task RunAsync()
         {
             string json = string.Empty;
