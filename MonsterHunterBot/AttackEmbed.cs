@@ -13,7 +13,7 @@ namespace MonsterHunterBot
         public CommandContext Ctx { get; private set; }
         public Hunter Hunter { get; private set; }
         public DiscordEmbedBuilder Embed { get; private set; }
-        public double TimeLeftOnCooldown { get; private set; }
+        public int TimeLeftOnCooldown { get; set; }
         public string DamageDescription { get; set; }
         public int DamageTakenFromHit { get; set; }
         public DiscordMessage Message { get; private set; }
@@ -47,16 +47,16 @@ namespace MonsterHunterBot
         {
             while (Bot.ServerActiveMonster[Ctx.Guild.Id].Monster.Health > 0)
             {
-                if (DamageDescription.StartsWith('*'))
-                    DamageDescription.Substring(1, DamageDescription.Length - 2);
+                if (!(DamageDescription is null) && DamageDescription.StartsWith('*'))
+                    DamageDescription = DamageDescription.Substring(1, DamageDescription.Length - 2);
                 else
                     DamageDescription = null;
 
-                TimeLeftOnCooldown -= .5;
+                TimeLeftOnCooldown--;
                 if (TimeLeftOnCooldown < 0)
                     TimeLeftOnCooldown = 0;
 
-                Embed.WithFooter(TimeLeftOnCooldown.ToString((TimeLeftOnCooldown / 60) + ":" + Math.Ceiling(TimeLeftOnCooldown % 60)));
+                Embed.WithFooter(ClockFormatOfCooldown(TimeLeftOnCooldown));
                 if (DamageDescription is null)
                 {
                     Embed.Fields[0].Name = "Damage Log..";
@@ -67,8 +67,8 @@ namespace MonsterHunterBot
                     Embed.Fields[0].Name = DamageDescription;
                     Embed.Fields[0].Value = DamageTakenFromHit.ToString();
                 }
-                await Message.ModifyAsync(default, new Optional<DiscordEmbed>(Embed));
-                await Task.Delay(500);
+                await Message.ModifyAsync(embed: new Optional<DiscordEmbed>(Embed));
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
         }
 
@@ -77,6 +77,24 @@ namespace MonsterHunterBot
             if (TimeLeftOnCooldown != 0)
                 return true;
             return false;
+        }
+
+        public string ClockFormatOfCooldown(int cooldown)
+        {
+            string cooldownTime = "";
+            int minutes = cooldown / 60;
+            if (minutes < 10)
+                cooldownTime += "0" + minutes;
+            else
+                cooldownTime += minutes;
+            int seconds = cooldown % 60;
+            cooldownTime += ":";
+            if (seconds < 10)
+                cooldownTime += "0" + seconds;
+            else
+                cooldownTime += seconds;
+
+            return cooldownTime;
         }
     }
 }
