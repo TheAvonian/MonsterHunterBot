@@ -11,7 +11,7 @@ namespace MonsterHunterBot
     public class Hunter
     {
         public string Name { get; set; }
-        public List<string> Weapons { get; private set; }
+        public List<Weapons> Weapons { get; private set; }
         public List<string> ResourcePouch { get; private set; }
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
@@ -20,6 +20,7 @@ namespace MonsterHunterBot
         public GuildCard GuildCard { get; set; }
         public Palico Palico { get; set; }
         public AttackEmbed AttackEmbed { get; set; }
+        public int Rank { get; set; }
 
         public Hunter(string name)
         {
@@ -27,6 +28,7 @@ namespace MonsterHunterBot
             Weapons = new List<string>();
             ResourcePouch = new List<string>();
             Health = MaxHealth;
+            Rank = 1;
 
             GuildCard = new GuildCard();
         }

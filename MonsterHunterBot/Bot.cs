@@ -90,6 +90,7 @@ namespace MonsterHunterBot
 
             Commands.RegisterCommands<BasicCommands>();
             Commands.RegisterCommands<MonsterHunterCommands>();
+            Commands.RegisterCommands<ShopCommands>();
             await Client.ConnectAsync();
 
             await Task.Delay(-1);
