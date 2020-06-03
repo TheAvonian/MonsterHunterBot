@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MonsterHunterBot
 {
-    public class Weapons
+    public class Weapon
     {
         public string Name { get; private set; }
         public int BaseDamage { get; private set; }
@@ -16,7 +16,7 @@ namespace MonsterHunterBot
         public int Rank { get; private set; } //Represents the weapons average rank it is effective against
         public string WeaponType { get; private set; }
 
-        public Weapons(string name, string description, int baseDamage, int critChance, int rank, string weaponType)
+        public Weapon(string name, string description, int baseDamage, int critChance, int rank, string weaponType)
         {
             Name = name;
             Description = description;

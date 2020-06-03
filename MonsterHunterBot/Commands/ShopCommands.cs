@@ -4,6 +4,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace MonsterHunterBot.Commands
@@ -23,7 +24,7 @@ namespace MonsterHunterBot.Commands
             Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
             var Interactivity = ctx.Client.GetInteractivity();
 
-            List<Weapons> weaponList = GetWeaponsList();
+            List<Weapon> weaponList = GetWeaponsList();
 
             var NumberEmojis = new List<DiscordEmoji> {
                 DiscordEmoji.FromName(ctx.Client, ":one:"),
@@ -68,59 +69,82 @@ namespace MonsterHunterBot.Commands
             
 
             var shopDisplay = await ctx.Channel.SendMessageAsync(embed: ShopEmbed);
+            bool again = true;
 
-            for(int i = 0; i < WeaponTypeEmojis.Count; i++)
+            //loop to allow players to go back and look at other weapon types
+            while (again)
             {
-                await shopDisplay.CreateReactionAsync(WeaponTypeEmojis[i]);
-            }
-
-            var weaponChoice = await Interactivity.WaitForReactionAsync(
-                x => x.Message == shopDisplay &&
-                x.User.Id == ctx.Member.Id &&
-                WeaponTypeEmojis.Contains(x.Emoji));
-
-            await shopDisplay.DeleteAllReactionsAsync();
-
-            int shopListIndex = 1;
-            for (int i = 0; i < weaponList.Count; i++)
-            {
-                if (weaponList[i].Rank <= hunter.Rank)
+                for (int i = 0; i < WeaponTypeEmojis.Count; i++)
                 {
-                    ShopEmbed.AddField(shopListIndex + ":", weaponList[i].ToString());
-                    shopListIndex++;
+                    await shopDisplay.CreateReactionAsync(WeaponTypeEmojis[i]);
                 }
-            }
 
-            await shopDisplay.ModifyAsync(embed: new Optional<DiscordEmbed>(ShopEmbed));
+                var weaponChoice = await Interactivity.WaitForReactionAsync(
+                    x => x.Message == shopDisplay &&
+                    x.User.Id == ctx.Member.Id &&
+                    WeaponTypeEmojis.Contains(x.Emoji));
 
-            List<DiscordEmoji> UsedEmojis = new List<DiscordEmoji>();
-            for(int i = 0; i < shopListIndex -1; i++)
-            {
-                await shopDisplay.CreateReactionAsync(NumberEmojis[i]);
-                UsedEmojis.Add(NumberEmojis[i]);
-            }
+                int choiceIndex = WeaponTypeEmojis.IndexOf(weaponChoice.Result.Emoji);
+                string choice = WeaponTypes[choiceIndex];
 
-            DiscordEmoji UndoEmoji = DiscordEmoji.FromName(ctx.Client, ":leftwards_arrow_with_hook:");
-            await shopDisplay.CreateReactionAsync(UndoEmoji);
+                await shopDisplay.DeleteAllReactionsAsync();
 
-            var item = await Interactivity.WaitForReactionAsync(
-                x => x.Message == shopDisplay &&
-                x.User.Id == ctx.Member.Id &&
-                UsedEmojis.Contains(x.Emoji) || x.Emoji == UndoEmoji);
+                int shopListIndex = 1;
+                for (int i = 0; i < weaponList.Count; i++)
+                {
+                    if (weaponList[i].Rank <= hunter.Rank)
+                    {
+                        ShopEmbed.AddField(shopListIndex + ":", weaponList[i].ToString());
+                        shopListIndex++;
+                    }
+                }
 
-            if(item.Result.Emoji != UndoEmoji)
-            {
-                int index = NumberEmojis.IndexOf(item.Result.Emoji);
+                await shopDisplay.ModifyAsync(embed: new Optional<DiscordEmbed>(ShopEmbed));
+
+                List<DiscordEmoji> UsedEmojis = new List<DiscordEmoji>();
+                for (int i = 0; i < shopListIndex - 1; i++)
+                {
+                    await shopDisplay.CreateReactionAsync(NumberEmojis[i]);
+                    UsedEmojis.Add(NumberEmojis[i]);
+                }
+
+                DiscordEmoji UndoEmoji = DiscordEmoji.FromName(ctx.Client, ":leftwards_arrow_with_hook:");
+                await shopDisplay.CreateReactionAsync(UndoEmoji);
+
+                var item = await Interactivity.WaitForReactionAsync(
+                    x => x.Message == shopDisplay &&
+                    x.User.Id == ctx.Member.Id &&
+                    UsedEmojis.Contains(x.Emoji) || x.Emoji == UndoEmoji);
+
+                ShopEmbed.ClearFields();
+                await shopDisplay.DeleteAllReactionsAsync();
+                if (item.Result.Emoji != UndoEmoji)
+                {
+                    again = false;
+                    int index = NumberEmojis.IndexOf(item.Result.Emoji);
+                    Weapon weapon = new Weapon("something went wrong", "0", 0, 0, 0, "0");
+                    //Finds the weapon that the user 'bought'
+                    for (int i = 0; i < weaponList.Count; i++)
+                    {
+                        if (weaponList[i].ToString().Equals(ShopEmbed.Fields[index].ToString()))
+                            weapon = weaponList[i];
+                    }
+                    hunter.Weapons.Add(weapon);
+                }
+                else
+                {
+                    await shopDisplay.ModifyAsync(embed: new Optional<DiscordEmbed>(ShopEmbed));
+                }
             }
         }
 
-        public List<Weapons> GetWeaponsList()
+        public List<Weapon> GetWeaponsList()
         {
-            return new List<Weapons> { 
-                new Weapons("Iron Drums", "Low level metal hunting horn", 5, 4, 1, "Hunting Horn"),
-                new Weapons("Iron Glaive", "Low level metal Insect Glaive", 3, 2, 1, "Insect Glaive"),
-                new Weapons("Flame Glaive", "A fiery insect glaive made from the ferocious *Rathalos*", 30, 4, 3, "Insect Glaive"),
-                new Weapons("**JASON**", "Unlimited, yet somewhat forgetful, power", 92, 10, 8, "God")};
+            return new List<Weapon> { 
+                new Weapon("Iron Drums", "Low level metal hunting horn", 5, 4, 1, "Hunting Horn"),
+                new Weapon("Iron Glaive", "Low level metal Insect Glaive", 3, 2, 1, "Insect Glaive"),
+                new Weapon("Flame Glaive", "A fiery insect glaive made from the ferocious *Rathalos*", 30, 4, 3, "Insect Glaive"),
+                new Weapon("**JASON**", "Unlimited, yet somewhat forgetful, power", 92, 10, 8, "God")};
         }
     }
 }

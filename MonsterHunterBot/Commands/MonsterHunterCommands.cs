@@ -86,7 +86,6 @@ namespace MonsterHunterBot.Commands
             var playerRole = await ctx.Guild.CreateRoleAsync(hName, Permissions.None, new DiscordColor("00FF00"), false, false);
             // Adds new hunter to the hunters list
             var configHunter = new ConfigHunterJson() { Hunter = new Hunter(hName), Uuid = ctx.Member.Id, Role =  playerRole };
-            configHunter.Hunter.GuildCard.Path = ".\\Servers\\" + ctx.Guild.Id + "\\Hunters\\" + ctx.Member.Id + ".jpg";
             Bot.ServerHunterList[ctx.Guild.Id].Add(configHunter);
 
             UpdateHunterJson(ctx);
