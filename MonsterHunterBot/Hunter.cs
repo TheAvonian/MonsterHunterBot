@@ -17,8 +17,6 @@ namespace MonsterHunterBot
         public int MaxHealth { get; private set; } = 100;
         public Armor[] ArmorSlots { get; private set; } = { new Armor(), new Armor(), new Armor(), new Armor(), new Armor() };
         public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", "Your beaters...", 1, 0, 0, "Fists");
-        public GuildCard GuildCard { get; set; }
-        public Palico Palico { get; set; }
         public AttackEmbed AttackEmbed { get; set; }
 
         public Hunter(string name)
@@ -27,8 +25,6 @@ namespace MonsterHunterBot
             Weapons = new List<string>();
             ResourcePouch = new List<string>();
             Health = MaxHealth;
-
-            GuildCard = new GuildCard();
             
         }
 
