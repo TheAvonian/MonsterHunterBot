@@ -365,18 +365,6 @@ namespace MonsterHunterBot.Commands
                 await Task.Delay(TimeSpan.FromSeconds(move.Cooldown));
                 await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
             }
-        }     
-
-        [Command("GuildCard"), Description("Shows the Hunter's guild card.")]
-        public async Task GuildCard(CommandContext ctx)
-        {
-            if (NoHunter(ctx)) return;
-            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == ctx.Member.Id).Hunter;
-            GuildCard guildCard = hunter.GuildCard;
-            Color textC = guildCard.TextColor;
-            Image background = guildCard.Background;
-
-            await ctx.Channel.SendFileAsync(".\\Images\\StartingBackground.jpg");
         }
 
 
