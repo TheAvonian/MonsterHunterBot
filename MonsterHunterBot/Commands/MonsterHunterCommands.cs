@@ -364,20 +364,8 @@ namespace MonsterHunterBot.Commands
                 await Task.Delay(TimeSpan.FromSeconds(move.Cooldown));
                 await reaction.Result.Message.DeleteReactionAsync(reaction.Result.Emoji, ctx.User);
             }
-        }     
-
-        [Command("Shop"), Description("The shop menu for hunters to buy base weapons")]
-        public async Task Shop(CommandContext ctx)
-        {
-            //Checks if the user has a hunter or not
-            ulong uuid = ctx.Member.Id;
-            if (Bot.ServerHunterList[ctx.Guild.Id].Any(u => u.Uuid == uuid))
-            {
-                await ctx.Channel.SendMessageAsync("You cannot shop if you're not a Hunter!");
-                return;
-            }
-            Hunter hunter = Bot.ServerHunterList[ctx.Guild.Id].Find(u => u.Uuid == uuid).Hunter;
         }
+
 
         public async Task UpdateChannelAsync(CommandContext ctx)
         {

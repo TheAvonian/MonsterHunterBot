@@ -43,5 +43,11 @@ namespace MonsterHunterBot
 
             return damage;
         }
+
+        override public string ToString()
+        {
+            return "**" + Name + "** " + Description + "\nBase Damage: *" + BaseDamage + "*\nCrit Chance: *" + CritChance + "*\nRank: *" + Rank + "*";
+
+        }
     }
 }

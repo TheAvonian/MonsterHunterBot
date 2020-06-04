@@ -11,21 +11,22 @@ namespace MonsterHunterBot
     public class Hunter
     {
         public string Name { get; set; }
-        public List<string> Weapons { get; private set; }
+        public List<Weapon> Weapons { get; private set; }
         public List<string> ResourcePouch { get; private set; }
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
         public Armor[] ArmorSlots { get; private set; } = { new Armor(), new Armor(), new Armor(), new Armor(), new Armor() };
-        public Weapon CurrentWeapon { get; private set; } = new Weapon("Fists", "Your beaters...", 1, 0, 0, "Fists");
+        public Weapon CurrentWeapon { get; private set; } = new Weapon("Fists", "Your gamer gloves...", 1, 0, 0, "Fists");
         public AttackEmbed AttackEmbed { get; set; }
+        public int Rank { get; set; }
 
         public Hunter(string name)
         {
             this.Name = name;
-            Weapons = new List<string>();
+            Weapons = new List<Weapon>();
             ResourcePouch = new List<string>();
             Health = MaxHealth;
-            
+            Rank = 1;
         }
 
         //Reduces the health of the player and updates their damage display
