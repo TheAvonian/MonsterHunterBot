@@ -21,9 +21,7 @@ namespace MonsterHunterBot
         public InteractivityExtension Interactivity { get; private set; }
         public static Dictionary<ulong, List<ConfigHunterJson>> ServerHunterList { get; set; } = new Dictionary<ulong, List<ConfigHunterJson>>();
         public static Dictionary<ulong, ConfigMonsterJson> ServerActiveMonster { get; set; } = new Dictionary<ulong, ConfigMonsterJson>();
-
-        public static SqlConnection DatabaseConnection { get; } = new SqlConnection(@"Data Source = (LocalDB)\MSSQLLocalDB;Initial Catalog = MHBotDatabase;Integrated Security = True");
-        public static SqlCommand Database { get; set; }
+        public static List<Weapon> Weapons { get; set; } = new List<Weapon>();
         public async Task RunAsync()
         {
             string json = string.Empty;

@@ -16,7 +16,7 @@ namespace MonsterHunterBot
         public int Health { get; private set; }
         public int MaxHealth { get; private set; } = 100;
         public Armor[] ArmorSlots { get; private set; } = { new Armor(), new Armor(), new Armor(), new Armor(), new Armor() };
-        public Weapons CurrentWeapon { get; private set; } = new Weapons("Fists", "Your beaters...", 1, 0, 0, "Fists");
+        public Weapon CurrentWeapon { get; private set; } = new Weapon("Fists", "Your beaters...", 1, 0, 0, "Fists");
         public AttackEmbed AttackEmbed { get; set; }
 
         public Hunter(string name)
